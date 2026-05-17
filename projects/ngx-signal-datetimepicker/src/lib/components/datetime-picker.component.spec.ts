@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, signal } from '@angular/core';
+import { Component, LOCALE_ID, signal } from '@angular/core';
 import {
   FormControl,
   ReactiveFormsModule,
@@ -348,6 +348,51 @@ describe('NgxDatetimePicker', () => {
       okBtn.click();
       fix.detectChanges();
       expect(isOpen(fix)).toBe(false);
+    });
+  });
+
+  describe('locale resolution', () => {
+    @Component({
+      selector: 'host-loc',
+      imports: [NgxDatetimePicker],
+      template: `<ngx-datetime-picker [(value)]="value" [locale]="locale()" />`,
+    })
+    class HostLocale {
+      value = signal<Date | null>(new Date(2024, 5, 17, 14, 30));
+      locale = signal<string | null>(null);
+    }
+
+    it('falls back to the injected LOCALE_ID when no input is provided', () => {
+      TestBed.configureTestingModule({
+        imports: [HostLocale],
+        providers: [{ provide: LOCALE_ID, useValue: 'pl-PL' }],
+      });
+      const fix = TestBed.createComponent(HostLocale);
+      fix.detectChanges();
+      // Polish month name is "cze" (czerwiec)
+      const text = trigger(fix).textContent ?? '';
+      expect(text.toLowerCase()).toMatch(/cze/);
+    });
+
+    it('explicit locale input wins over LOCALE_ID', () => {
+      TestBed.configureTestingModule({
+        imports: [HostLocale],
+        providers: [{ provide: LOCALE_ID, useValue: 'pl-PL' }],
+      });
+      const fix = TestBed.createComponent(HostLocale);
+      fix.componentInstance.locale.set('de-DE');
+      fix.detectChanges();
+      const text = trigger(fix).textContent ?? '';
+      // German month name "Juni"
+      expect(text).toMatch(/Juni|Jun/i);
+    });
+
+    it('falls back to en-US when neither input nor LOCALE_ID is set', () => {
+      TestBed.configureTestingModule({ imports: [HostLocale] });
+      const fix = TestBed.createComponent(HostLocale);
+      fix.detectChanges();
+      const text = trigger(fix).textContent ?? '';
+      expect(text).toMatch(/Jun|Jul|Aug|May/i);
     });
   });
 
