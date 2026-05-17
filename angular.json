@@ -28,7 +28,22 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/ngx-signal-datetimepicker/tsconfig.spec.json"
+            "tsConfig": "projects/ngx-signal-datetimepicker/tsconfig.spec.json",
+            "coverage": true,
+            "coverageReporters": ["text-summary", "lcov", "html"],
+            "coverageInclude": [
+              "projects/ngx-signal-datetimepicker/src/lib/**/*.ts"
+            ],
+            "coverageExclude": [
+              "projects/ngx-signal-datetimepicker/src/lib/**/*.spec.ts",
+              "projects/ngx-signal-datetimepicker/src/public-api.ts"
+            ],
+            "coverageThresholds": {
+              "lines": 95,
+              "statements": 95,
+              "functions": 90,
+              "branches": 90
+            }
           }
         }
       }
