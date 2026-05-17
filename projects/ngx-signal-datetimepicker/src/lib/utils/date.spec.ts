@@ -10,7 +10,10 @@ import {
   defaultDisplayFormat,
   endOfMonth,
   formatDateTime,
+  fromZonedFacade,
+  fromZonedParts,
   getWeekdayLabels,
+  getZonedParts,
   isAfter,
   isBefore,
   pad2,
@@ -18,6 +21,7 @@ import {
   startOfMonth,
   to12Hour,
   to24Hour,
+  toZonedFacade,
   Weekday,
 } from './date';
 
@@ -191,6 +195,52 @@ describe('date utils', () => {
       expect(clampMinuteOrSecond(75)).toBe(59);
       expect(clampMinuteOrSecond(30)).toBe(30);
       expect(clampMinuteOrSecond(NaN)).toBe(0);
+    });
+  });
+
+  describe('time-zone helpers', () => {
+    // 2024-06-17 12:00:00 UTC → in Warsaw it's 14:00 (UTC+2 DST), in NYC 08:00 (UTC-4 DST), in UTC 12:00.
+    const instant = new Date(Date.UTC(2024, 5, 17, 12, 0, 0));
+
+    it('getZonedParts reflects the wall-clock in the given zone', () => {
+      expect(getZonedParts(instant, 'UTC')).toEqual({
+        year: 2024, month: 5, day: 17, hours: 12, minutes: 0, seconds: 0,
+      });
+      expect(getZonedParts(instant, 'Europe/Warsaw')).toEqual({
+        year: 2024, month: 5, day: 17, hours: 14, minutes: 0, seconds: 0,
+      });
+      expect(getZonedParts(instant, 'America/New_York')).toEqual({
+        year: 2024, month: 5, day: 17, hours: 8, minutes: 0, seconds: 0,
+      });
+    });
+
+    it('handles midnight correctly (24-hour boundary)', () => {
+      // 2024-01-01 00:00:00 UTC — Intl can render as either "00" or "24" depending on engine.
+      const newYear = new Date(Date.UTC(2024, 0, 1, 0, 0, 0));
+      const parts = getZonedParts(newYear, 'UTC');
+      expect(parts.hours).toBe(0);
+      expect(parts.day).toBe(1);
+    });
+
+    it('fromZonedParts returns the UTC instant for the given wall clock', () => {
+      const result = fromZonedParts(
+        { year: 2024, month: 5, day: 17, hours: 14, minutes: 0, seconds: 0 },
+        'Europe/Warsaw',
+      );
+      // Warsaw 14:00 in June (DST) → 12:00 UTC.
+      expect(result.toISOString()).toBe('2024-06-17T12:00:00.000Z');
+    });
+
+    it('round-trips through toZonedFacade / fromZonedFacade', () => {
+      const back = fromZonedFacade(toZonedFacade(instant, 'Europe/Warsaw'), 'Europe/Warsaw');
+      expect(back.toISOString()).toBe(instant.toISOString());
+    });
+
+    it('toZonedFacade returns a NEW Date whose local accessors yield zoned wall time', () => {
+      const facade = toZonedFacade(instant, 'America/New_York');
+      // 2024-06-17 08:00 wall clock in NY (DST -4)
+      expect(facade.getHours()).toBe(8);
+      expect(facade.getDate()).toBe(17);
     });
   });
 

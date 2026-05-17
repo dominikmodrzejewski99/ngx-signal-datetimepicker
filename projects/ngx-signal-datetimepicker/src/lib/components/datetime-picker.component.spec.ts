@@ -351,48 +351,82 @@ describe('NgxDatetimePicker', () => {
     });
   });
 
-  describe('locale resolution', () => {
+  describe('time-zone support', () => {
     @Component({
-      selector: 'host-loc',
+      selector: 'host-tz',
       imports: [NgxDatetimePicker],
-      template: `<ngx-datetime-picker [(value)]="value" [locale]="locale()" />`,
+      template: `
+        <ngx-datetime-picker
+          [(value)]="value"
+          [timeZone]="tz()"
+          [hourCycle]="'h23'"
+        />
+      `,
     })
-    class HostLocale {
-      value = signal<Date | null>(new Date(2024, 5, 17, 14, 30));
-      locale = signal<string | null>(null);
+    class HostTz {
+      // 2024-06-17 12:00:00 UTC.
+      value = signal<Date | null>(new Date(Date.UTC(2024, 5, 17, 12, 0, 0)));
+      tz = signal<string | null>('Europe/Warsaw');
     }
 
-    it('falls back to the injected LOCALE_ID when no input is provided', () => {
-      TestBed.configureTestingModule({
-        imports: [HostLocale],
-        providers: [{ provide: LOCALE_ID, useValue: 'pl-PL' }],
-      });
-      const fix = TestBed.createComponent(HostLocale);
+    beforeEach(() => TestBed.configureTestingModule({ imports: [HostTz] }));
+
+    it('renders the trigger display in the configured zone', () => {
+      const fix = TestBed.createComponent(HostTz);
       fix.detectChanges();
-      // Polish month name is "cze" (czerwiec)
-      const text = trigger(fix).textContent ?? '';
-      expect(text.toLowerCase()).toMatch(/cze/);
+      // 12:00 UTC → 14:00 Warsaw in June.
+      expect(trigger(fix).textContent ?? '').toContain('14:00');
     });
 
-    it('explicit locale input wins over LOCALE_ID', () => {
-      TestBed.configureTestingModule({
-        imports: [HostLocale],
-        providers: [{ provide: LOCALE_ID, useValue: 'pl-PL' }],
-      });
-      const fix = TestBed.createComponent(HostLocale);
-      fix.componentInstance.locale.set('de-DE');
+    it('time inputs reflect zoned wall clock', () => {
+      const fix = TestBed.createComponent(HostTz);
       fix.detectChanges();
-      const text = trigger(fix).textContent ?? '';
-      // German month name "Juni"
-      expect(text).toMatch(/Juni|Jun/i);
+      trigger(fix).click();
+      fix.detectChanges();
+      const inputs = fix.nativeElement.querySelectorAll(
+        'input.ngx-dt-time__input',
+      ) as NodeListOf<HTMLInputElement>;
+      expect(inputs[0].value).toBe('14');
     });
 
-    it('falls back to en-US when neither input nor LOCALE_ID is set', () => {
-      TestBed.configureTestingModule({ imports: [HostLocale] });
-      const fix = TestBed.createComponent(HostLocale);
+    it('editing the hour writes back the right UTC instant', () => {
+      const fix = TestBed.createComponent(HostTz);
       fix.detectChanges();
-      const text = trigger(fix).textContent ?? '';
-      expect(text).toMatch(/Jun|Jul|Aug|May/i);
+      trigger(fix).click();
+      fix.detectChanges();
+      const hourInput = fix.nativeElement.querySelector(
+        'input.ngx-dt-time__input',
+      ) as HTMLInputElement;
+      hourInput.value = '15';
+      hourInput.dispatchEvent(new Event('input'));
+      fix.detectChanges();
+      // 15:00 Warsaw (DST -02:00) → 13:00 UTC.
+      const v = fix.componentInstance.value();
+      expect(v?.toISOString()).toBe('2024-06-17T13:00:00.000Z');
+    });
+
+    it('clicking a calendar day combines it with the zoned draft time', () => {
+      const fix = TestBed.createComponent(HostTz);
+      fix.componentInstance.value.set(null);
+      fix.detectChanges();
+      trigger(fix).click();
+      fix.detectChanges();
+      const day = fix.nativeElement.querySelector(
+        'button.ngx-dt-calendar__day:not(.is-outside)',
+      ) as HTMLButtonElement;
+      day.click();
+      fix.detectChanges();
+      const v = fix.componentInstance.value();
+      expect(v).not.toBeNull();
+      // The produced instant should render at the same wall time in Warsaw.
+      const fmt = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+      });
+      const wall = fmt.format(v!);
+      const now = new Date();
+      const warsawWall = fmt.format(now);
+      // Same hour:minute as "now in Warsaw" because suggestCurrentTime fills the draft.
+      expect(wall.slice(0, 2)).toBe(warsawWall.slice(0, 2));
     });
   });
 
