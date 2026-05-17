@@ -23,7 +23,9 @@ import {
   combineDateAndTime,
   defaultDisplayFormat,
   formatDateTime,
+  fromZonedFacade,
   HourCycle,
+  toZonedFacade,
   Weekday,
 } from '../utils/date';
 import { NgxDatetimeCalendar } from './calendar.component';
@@ -74,9 +76,14 @@ const DEFAULT_PRESETS: readonly TimePreset[] = [
   },
 ];
 
-function currentTime(): TimeValue {
+function currentTime(timeZone?: string | null): TimeValue {
   const now = new Date();
-  return { hours: now.getHours(), minutes: now.getMinutes(), seconds: now.getSeconds() };
+  const facade = timeZone ? toZonedFacade(now, timeZone) : now;
+  return {
+    hours: facade.getHours(),
+    minutes: facade.getMinutes(),
+    seconds: facade.getSeconds(),
+  };
 }
 
 @Component({
@@ -135,10 +142,10 @@ function currentTime(): TimeValue {
         }
         <ngx-datetime-calendar
           #calendar
-          [selected]="value()"
-          [min]="minDate()"
-          [max]="maxDate()"
-          [locale]="effectiveLocale()"
+          [selected]="zonedSelected()"
+          [min]="zonedMin()"
+          [max]="zonedMax()"
+          [locale]="locale()"
           [weekStartsOn]="weekStartsOn()"
           [ariaLabel]="'Date'"
           (daySelect)="onDateSelect($event)"
@@ -342,6 +349,14 @@ export class NgxDatetimePicker
   readonly secondStep = input<number>(1);
   readonly placeholder = input<string>('Select date and time');
   readonly displayFormat = input<Intl.DateTimeFormatOptions | null>(null);
+  /**
+   * IANA time-zone name (e.g. `'Europe/Warsaw'`, `'America/New_York'`,
+   * `'UTC'`). When set, the calendar and time inputs interpret the bound `Date`
+   * as wall-clock time in that zone; the model is still a JavaScript `Date`
+   * (an absolute UTC instant). When `null`, the picker uses the browser's local
+   * zone (existing behavior).
+   */
+  readonly timeZone = input<string | null>(null);
   readonly closeOnSelect = input<boolean>(false);
   readonly clearLabel = input<string>('Clear');
   readonly confirmLabel = input<string>('OK');
@@ -397,9 +412,37 @@ export class NgxDatetimePicker
   /** Time used while value is null — lets the user fiddle with hours/minutes before picking a date. */
   private readonly draftTime = signal<TimeValue>({ hours: 0, minutes: 0, seconds: 0 });
 
-  protected readonly timeValue = computed<TimeValue>(() => {
+  /** The selected value, projected into the configured time zone (or local). */
+  protected readonly zonedSelected = computed<Date | null>(() => {
     const v = this.value();
-    if (v) return { hours: v.getHours(), minutes: v.getMinutes(), seconds: v.getSeconds() };
+    if (!v) return null;
+    const tz = this.timeZone();
+    return tz ? toZonedFacade(v, tz) : v;
+  });
+
+  protected readonly zonedMin = computed<Date | null>(() => {
+    const v = this.minDate();
+    if (!v) return null;
+    const tz = this.timeZone();
+    return tz ? toZonedFacade(v, tz) : v;
+  });
+
+  protected readonly zonedMax = computed<Date | null>(() => {
+    const v = this.maxDate();
+    if (!v) return null;
+    const tz = this.timeZone();
+    return tz ? toZonedFacade(v, tz) : v;
+  });
+
+  protected readonly timeValue = computed<TimeValue>(() => {
+    const facade = this.zonedSelected();
+    if (facade) {
+      return {
+        hours: facade.getHours(),
+        minutes: facade.getMinutes(),
+        seconds: facade.getSeconds(),
+      };
+    }
     return this.draftTime();
   });
 
@@ -410,8 +453,11 @@ export class NgxDatetimePicker
   protected readonly displayText = computed(() => {
     const v = this.value();
     if (!v) return this.placeholder();
-    const fmt = this.displayFormat() ?? defaultDisplayFormat(this.showSeconds(), this.hourCycle());
-    return formatDateTime(v, this.effectiveLocale(), fmt);
+    const userFmt = this.displayFormat();
+    const tz = this.timeZone();
+    const base = userFmt ?? defaultDisplayFormat(this.showSeconds(), this.hourCycle());
+    const fmt: Intl.DateTimeFormatOptions = tz ? { ...base, timeZone: tz } : base;
+    return formatDateTime(v, this.locale(), fmt);
   });
 
   protected readonly triggerContext = computed<NgxDatetimeTriggerContext>(() => ({
@@ -430,7 +476,7 @@ export class NgxDatetimePicker
   open(): void {
     if (this.effectiveDisabled()) return;
     if (!this.value() && this.suggestCurrentTime()) {
-      this.draftTime.set(currentTime());
+      this.draftTime.set(currentTime(this.timeZone()));
     }
     this.isOpen.set(true);
     this.pendingPanelFocus.set(true);
@@ -455,7 +501,7 @@ export class NgxDatetimePicker
     if (this.effectiveDisabled() || this.readonly()) return;
     this.value.set(null);
     if (this.suggestCurrentTime()) {
-      this.draftTime.set(currentTime());
+      this.draftTime.set(currentTime(this.timeZone()));
     }
     this.touched.set(true);
   }
@@ -468,20 +514,31 @@ export class NgxDatetimePicker
     if (this.effectiveDisabled() || this.readonly()) return;
     const clamped = clampDate(new Date(), this.minDate(), this.maxDate());
     this.value.set(clamped);
+    const tz = this.timeZone();
+    const projected = tz ? toZonedFacade(clamped, tz) : clamped;
     this.draftTime.set({
-      hours: clamped.getHours(),
-      minutes: clamped.getMinutes(),
-      seconds: clamped.getSeconds(),
+      hours: projected.getHours(),
+      minutes: projected.getMinutes(),
+      seconds: projected.getSeconds(),
     });
   }
 
   protected onDateSelect(date: Date): void {
     if (this.effectiveDisabled() || this.readonly()) return;
+    const tz = this.timeZone();
     const current = this.value();
-    const t = current
-      ? { hours: current.getHours(), minutes: current.getMinutes(), seconds: current.getSeconds() }
+    const currentFacade = current
+      ? tz ? toZonedFacade(current, tz) : current
+      : null;
+    const t = currentFacade
+      ? {
+          hours: currentFacade.getHours(),
+          minutes: currentFacade.getMinutes(),
+          seconds: currentFacade.getSeconds(),
+        }
       : this.draftTime();
-    const next = combineDateAndTime(date, t.hours, t.minutes, t.seconds);
+    const facade = combineDateAndTime(date, t.hours, t.minutes, t.seconds);
+    const next = tz ? fromZonedFacade(facade, tz) : facade;
     this.value.set(clampDate(next, this.minDate(), this.maxDate()));
     if (this.closeOnSelect() && !this.showTime()) {
       this.close();
@@ -493,7 +550,10 @@ export class NgxDatetimePicker
     this.draftTime.set(time);
     const current = this.value();
     if (!current) return; // wait until a date is picked
-    const next = combineDateAndTime(current, time.hours, time.minutes, time.seconds);
+    const tz = this.timeZone();
+    const facade = tz ? toZonedFacade(current, tz) : current;
+    const newFacade = combineDateAndTime(facade, time.hours, time.minutes, time.seconds);
+    const next = tz ? fromZonedFacade(newFacade, tz) : newFacade;
     this.value.set(clampDate(next, this.minDate(), this.maxDate()));
   }
 
