@@ -1,0 +1,28 @@
+name: Bundle size
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build:lib
+      - name: Report dist size
+        run: |
+          echo "## Bundle size" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          du -sh dist/ngx-signal-datetimepicker >> $GITHUB_STEP_SUMMARY
+          find dist/ngx-signal-datetimepicker/fesm2022 -name '*.mjs' \
+            -exec sh -c 'gzip -c "$1" | wc -c | awk -v f="$1" "{printf \"%-60s %6d bytes gzipped\n\", f, \$1}"' _ {} \; \
+            >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
