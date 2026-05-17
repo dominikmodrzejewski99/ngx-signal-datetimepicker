@@ -231,15 +231,21 @@ function currentTime(timeZone?: string | null): TimeValue {
     }
   `,
   styles: [`
-    :host { position: relative; display: inline-block; font-family: var(--ngx-dt-font, inherit); }
+    :host {
+      position: relative;
+      display: inline-block;
+      font-family: var(--ngx-dt-font, inherit);
+      color: var(--ngx-dt-fg, #111827);
+    }
     :host.is-disabled { opacity: 0.6; pointer-events: none; }
 
     .ngx-dt-trigger {
       display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid var(--ngx-dt-border, #d1d5db);
+      padding: 0.625rem 0.875rem;
+      min-height: var(--ngx-dt-target-size, 2.75rem);
+      border: 1px solid var(--ngx-dt-border, #6b7280);
       background: var(--ngx-dt-input-bg, #fff);
-      color: var(--ngx-dt-fg, inherit);
+      color: var(--ngx-dt-fg, #111827);
       border-radius: var(--ngx-dt-radius, 0.5rem);
       cursor: pointer;
       font: inherit;
@@ -247,13 +253,13 @@ function currentTime(timeZone?: string | null): TimeValue {
       justify-content: space-between;
     }
     .ngx-dt-trigger:hover:not(:disabled) {
-      border-color: var(--ngx-dt-focus, #2563eb);
+      border-color: var(--ngx-dt-focus, #1d4ed8);
     }
     .ngx-dt-trigger:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb);
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
       outline-offset: 2px;
     }
-    .ngx-dt-trigger__text.is-placeholder { color: var(--ngx-dt-muted, #6b7280); }
+    .ngx-dt-trigger__text.is-placeholder { color: var(--ngx-dt-muted, #374151); }
 
     .ngx-dt-panel {
       position: absolute;
@@ -261,19 +267,19 @@ function currentTime(timeZone?: string | null): TimeValue {
       top: calc(100% + 0.375rem);
       left: 0;
       background: var(--ngx-dt-panel-bg, #fff);
-      color: var(--ngx-dt-fg, inherit);
-      border: 1px solid var(--ngx-dt-border, #e5e7eb);
+      color: var(--ngx-dt-fg, #111827);
+      border: 1px solid var(--ngx-dt-border, #6b7280);
       border-radius: var(--ngx-dt-radius-lg, 0.75rem);
       padding: var(--ngx-dt-panel-padding, 0.875rem);
-      box-shadow: var(--ngx-dt-shadow, 0 12px 32px rgba(0,0,0,0.12));
+      box-shadow: var(--ngx-dt-shadow, 0 12px 32px rgba(0,0,0,0.18));
       display: flex; flex-direction: column; gap: 0.75rem;
-      min-width: 19rem;
+      min-width: calc(7 * var(--ngx-dt-target-size, 2.75rem) + 2rem);
     }
-    .ngx-dt-divider { height: 1px; background: var(--ngx-dt-border, #e5e7eb); }
+    .ngx-dt-divider { height: 1px; background: var(--ngx-dt-border, #6b7280); }
     .ngx-dt-hint {
       margin: 0;
-      font-size: 0.75rem;
-      color: var(--ngx-dt-muted, #6b7280);
+      font-size: 0.8125rem;
+      color: var(--ngx-dt-muted, #374151);
       text-align: center;
     }
     .ngx-dt-actions {
@@ -281,6 +287,8 @@ function currentTime(timeZone?: string | null): TimeValue {
     }
     .ngx-dt-actions__spacer { flex: 1; }
     .ngx-dt-btn {
+      min-height: var(--ngx-dt-target-size, 2.75rem);
+      min-width: var(--ngx-dt-target-size, 2.75rem);
       padding: 0.5rem 0.875rem;
       border-radius: var(--ngx-dt-radius, 0.5rem);
       border: 1px solid transparent;
@@ -288,72 +296,22 @@ function currentTime(timeZone?: string | null): TimeValue {
       font: inherit; font-weight: 500;
     }
     .ngx-dt-btn:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb);
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
       outline-offset: 2px;
     }
     .ngx-dt-btn--ghost {
       background: transparent;
-      color: var(--ngx-dt-fg, inherit);
+      color: var(--ngx-dt-fg, #111827);
     }
     .ngx-dt-btn--ghost:hover:not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.05));
+      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
     }
     .ngx-dt-btn--primary {
-      background: var(--ngx-dt-accent, #2563eb);
+      background: var(--ngx-dt-accent, #1d4ed8);
       color: var(--ngx-dt-accent-fg, #fff);
     }
     .ngx-dt-btn--primary:hover:not(:disabled) { filter: brightness(0.95); }
-    .ngx-dt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* -- Floating-label field -------------------------------------------- */
-    .ngx-dt-field {
-      position: relative;
-      display: inline-flex;
-      flex-direction: column;
-      min-width: var(--ngx-dt-trigger-min-width, 16rem);
-    }
-    .ngx-dt-field .ngx-dt-trigger {
-      width: 100%;
-      padding-top: var(--ngx-dt-field-pad-top, 1.125rem);
-      padding-bottom: var(--ngx-dt-field-pad-bottom, 0.375rem);
-    }
-    .ngx-dt-field__label {
-      position: absolute;
-      pointer-events: none;
-      top: 50%;
-      left: 0.625rem;
-      transform: translateY(-50%);
-      padding: 0 0.25rem;
-      background: var(--ngx-dt-input-bg, #fff);
-      color: var(--ngx-dt-muted, #6b7280);
-      font-size: 0.95rem;
-      transform-origin: left center;
-      max-width: calc(100% - 1.5rem);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    @media (prefers-reduced-motion: no-preference) {
-      .ngx-dt-field__label {
-        transition: top 140ms ease, transform 140ms ease, color 140ms ease,
-                    font-size 140ms ease;
-      }
-    }
-    .ngx-dt-field:focus-within .ngx-dt-field__label,
-    .ngx-dt-field.is-floating .ngx-dt-field__label {
-      top: 0;
-      transform: translateY(-50%) scale(0.85);
-      color: var(--ngx-dt-focus, #2563eb);
-    }
-    .ngx-dt-field:focus-within .ngx-dt-trigger,
-    .ngx-dt-field.is-floating .ngx-dt-trigger {
-      border-color: var(--ngx-dt-focus, #2563eb);
-    }
-    .ngx-dt-field__hint {
-      margin: 0.25rem 0.25rem 0;
-      color: var(--ngx-dt-muted, #6b7280);
-      font-size: 0.75rem;
-    }
+    .ngx-dt-btn:disabled { opacity: 0.55; cursor: not-allowed; }
   `],
 })
 export class NgxDatetimePicker

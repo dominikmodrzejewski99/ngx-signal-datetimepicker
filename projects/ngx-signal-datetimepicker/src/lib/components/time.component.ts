@@ -180,54 +180,59 @@ export interface TimePreset {
       align-items: stretch; gap: 2px;
     }
     .ngx-dt-time__input {
-      width: var(--ngx-dt-time-input-width, 3rem);
-      height: var(--ngx-dt-time-input-height, 2.5rem);
+      width: var(--ngx-dt-time-input-width, 3.25rem);
+      min-height: var(--ngx-dt-target-size, 2.75rem);
       text-align: center;
       font-size: var(--ngx-dt-time-input-font-size, 1.25rem);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
-      border: 1px solid var(--ngx-dt-border, #d1d5db);
+      border: 1px solid var(--ngx-dt-border, #6b7280);
       background: var(--ngx-dt-input-bg, #fff);
-      color: var(--ngx-dt-fg, inherit);
+      color: var(--ngx-dt-fg, #111827);
       border-radius: var(--ngx-dt-radius, 0.5rem);
       padding: 0.25rem;
     }
     .ngx-dt-time__input:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb);
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
       outline-offset: 1px;
-      border-color: var(--ngx-dt-focus, #2563eb);
+      border-color: var(--ngx-dt-focus, #1d4ed8);
     }
+    /*
+     * Step ▲▼ are convenience controls; the manual text input above is the
+     * full-size equivalent (≥44×44) required by WCAG 2.5.5 ("Equivalent"
+     * exception). They still expand on hover for usability.
+     */
     .ngx-dt-time__step {
-      border: 1px solid var(--ngx-dt-border, #e5e7eb);
+      border: 1px solid var(--ngx-dt-border, #6b7280);
       background: var(--ngx-dt-input-bg, #fff);
-      color: var(--ngx-dt-fg, inherit);
-      width: 100%; height: 1.25rem;
+      color: var(--ngx-dt-fg, #111827);
+      width: 100%; min-height: 1.5rem;
       border-radius: var(--ngx-dt-radius, 0.375rem);
       cursor: pointer;
-      font-size: 0.625rem; line-height: 1;
+      font-size: 0.75rem; line-height: 1;
       display: inline-flex; align-items: center; justify-content: center;
     }
     .ngx-dt-time__step:hover:not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.05));
-      border-color: var(--ngx-dt-focus, #2563eb);
+      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
+      border-color: var(--ngx-dt-focus, #1d4ed8);
     }
     .ngx-dt-time__step:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb);
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
       outline-offset: 1px;
     }
-    .ngx-dt-time__step:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ngx-dt-time__step:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .ngx-dt-time__sep {
       align-self: center;
       font-weight: 700;
       font-size: 1.25rem;
       padding: 0 0.125rem;
-      color: var(--ngx-dt-muted, #6b7280);
+      color: var(--ngx-dt-muted, #374151);
     }
 
     .ngx-dt-time__period {
       display: inline-flex; align-self: center;
-      border: 1px solid var(--ngx-dt-border, #d1d5db);
+      border: 1px solid var(--ngx-dt-border, #6b7280);
       border-radius: var(--ngx-dt-radius, 0.5rem);
       overflow: hidden;
       margin-left: 0.5rem;
@@ -235,46 +240,49 @@ export interface TimePreset {
     .ngx-dt-time__period-btn {
       border: none;
       background: var(--ngx-dt-input-bg, #fff);
-      color: var(--ngx-dt-fg, inherit);
-      padding: 0.5rem 0.75rem;
+      color: var(--ngx-dt-fg, #111827);
+      padding: 0.5rem 0.875rem;
+      min-height: var(--ngx-dt-target-size, 2.75rem);
+      min-width: var(--ngx-dt-target-size, 2.75rem);
       cursor: pointer; font: inherit; font-weight: 600;
     }
     .ngx-dt-time__period-btn + .ngx-dt-time__period-btn {
-      border-left: 1px solid var(--ngx-dt-border, #d1d5db);
+      border-left: 1px solid var(--ngx-dt-border, #6b7280);
     }
     .ngx-dt-time__period-btn:hover:not(.is-active):not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.05));
+      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
     }
     .ngx-dt-time__period-btn.is-active {
-      background: var(--ngx-dt-accent, #2563eb);
+      background: var(--ngx-dt-accent, #1d4ed8);
       color: var(--ngx-dt-accent-fg, #fff);
     }
     .ngx-dt-time__period-btn:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb);
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
       outline-offset: -2px;
     }
 
     .ngx-dt-time__presets {
-      display: flex; flex-wrap: wrap; gap: 0.25rem;
+      display: flex; flex-wrap: wrap; gap: 0.375rem;
       justify-content: center;
     }
     .ngx-dt-time__preset {
-      padding: 0.25rem 0.625rem;
-      border: 1px solid var(--ngx-dt-border, #e5e7eb);
+      padding: 0.625rem 1rem;
+      min-height: var(--ngx-dt-target-size, 2.75rem);
+      border: 1px solid var(--ngx-dt-border, #6b7280);
       background: transparent;
-      color: var(--ngx-dt-fg, inherit);
+      color: var(--ngx-dt-fg, #111827);
       border-radius: 9999px;
-      cursor: pointer; font: inherit; font-size: 0.8rem;
+      cursor: pointer; font: inherit; font-size: 0.875rem;
     }
     .ngx-dt-time__preset:hover:not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.05));
-      border-color: var(--ngx-dt-focus, #2563eb);
+      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
+      border-color: var(--ngx-dt-focus, #1d4ed8);
     }
     .ngx-dt-time__preset:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb);
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
       outline-offset: 2px;
     }
-    .ngx-dt-time__preset:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ngx-dt-time__preset:disabled { opacity: 0.45; cursor: not-allowed; }
   `],
 })
 export class NgxDatetimeTime {
