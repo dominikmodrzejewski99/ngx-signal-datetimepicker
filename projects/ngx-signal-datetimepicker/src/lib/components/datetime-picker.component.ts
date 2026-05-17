@@ -9,6 +9,7 @@ import {
   forwardRef,
   inject,
   input,
+  LOCALE_ID,
   model,
   signal,
   TemplateRef,
@@ -137,7 +138,7 @@ function currentTime(): TimeValue {
           [selected]="value()"
           [min]="minDate()"
           [max]="maxDate()"
-          [locale]="locale()"
+          [locale]="effectiveLocale()"
           [weekStartsOn]="weekStartsOn()"
           [ariaLabel]="'Date'"
           (daySelect)="onDateSelect($event)"
@@ -271,6 +272,12 @@ export class NgxDatetimePicker
   implements FormValueControl<Date | null>, ControlValueAccessor
 {
   private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injectedLocale = inject(LOCALE_ID, { optional: true });
+
+  /** Resolved BCP-47 tag: explicit input → injected LOCALE_ID → 'en-US'. */
+  protected readonly effectiveLocale = computed(
+    () => this.locale() ?? this.injectedLocale ?? 'en-US',
+  );
 
   /**
    * Two-way bound value. Acts as a `ModelSignal<Date | null>` so the component
@@ -319,7 +326,14 @@ export class NgxDatetimePicker
   }
 
   // Customization inputs
-  readonly locale = input<string>('en-US');
+  /**
+   * BCP-47 locale tag used for date/time labels and formatting.
+   *
+   * When omitted, the component falls back to Angular's `LOCALE_ID` (the value
+   * configured via `provideZonelessChangeDetection`, `bootstrapApplication`, or
+   * the build-time `--localize`), and finally to `'en-US'`.
+   */
+  readonly locale = input<string | null>(null);
   readonly weekStartsOn = input<Weekday>(1);
   readonly hourCycle = input<HourCycle>('h23');
   readonly showSeconds = input<boolean>(false);
@@ -397,7 +411,7 @@ export class NgxDatetimePicker
     const v = this.value();
     if (!v) return this.placeholder();
     const fmt = this.displayFormat() ?? defaultDisplayFormat(this.showSeconds(), this.hourCycle());
-    return formatDateTime(v, this.locale(), fmt);
+    return formatDateTime(v, this.effectiveLocale(), fmt);
   });
 
   protected readonly triggerContext = computed<NgxDatetimeTriggerContext>(() => ({
