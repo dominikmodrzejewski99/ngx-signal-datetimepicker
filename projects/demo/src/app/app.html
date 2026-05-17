@@ -1,237 +1,440 @@
-@let startField = meetingForm.start;
+<div class="wrap">
+  <nav class="nav">
+    <a class="nav__brand" href="#top">
+      <div class="nav__mark">ʃ</div>
+      <div>
+        <div class="nav__name"><span class="at">ngx-</span>signal-datetimepicker</div>
+      </div>
+    </a>
+    <div class="nav__links">
+      <a href="#features">Features</a>
+      <a href="#quickstart">Quick start</a>
+      <a href="#api">API</a>
+      <a href="#examples">Examples</a>
+      <a href="#faq">FAQ</a>
+      <a class="nav__cta" href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker">GitHub ↗</a>
+    </div>
+  </nav>
+</div>
 
-<main class="page">
-  <header class="page__hero">
-    <h1>ngx-signal-datetimepicker</h1>
-    <p class="page__tagline">
-      One control. Date and time together. Built on Angular Signal Forms.
-      Zero dependencies. WCAG 2.2 AAA.
+<!-- ────────────────────────────────────────────────────────── HERO -->
+
+<section class="wrap hero" id="top">
+  <div class="hero__copy">
+    <span class="hero__eyebrow">
+      <span class="tag">v0.1.1</span>
+      <span>Angular 21 · standalone · signals</span>
+    </span>
+
+    <h1 class="hero__title">
+      A date &amp; time picker that thinks in <span class="signal">signal()</span>, not <span class="accent">subscribe</span>.
+    </h1>
+
+    <p class="hero__sub">
+      <b>ngx-signal-datetimepicker</b> is a standalone Angular component built on top of
+      the new Signal Forms API. No <code style="font-size:13px">RxJS</code> wiring,
+      no <code style="font-size:13px">FormControl</code> ceremony — just a reactive
+      primitive that drops into any template and stays in sync with your state.
     </p>
-    <div class="page__cta">
-      <a class="cta cta--primary" href="https://www.npmjs.com/package/ngx-signal-datetimepicker">npm install ngx-signal-datetimepicker</a>
-      <a class="cta cta--ghost" href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker">View on GitHub</a>
-    </div>
-  </header>
 
-  <section class="demo">
-    <header class="demo__head">
-      <h2>1. Standalone — two-way bound to a signal</h2>
-      <p>
-        The simplest way to use the picker. Pass any
-        <code>WritableSignal&lt;Date | null&gt;</code> with <code>[(value)]</code>
-        and you've got a working date+time control. Below the picker we just
-        print the ISO string of the bound signal — it updates the moment you
-        pick.
-      </p>
-    </header>
-    <ngx-datetime-picker
-      [(value)]="basic"
-      [hourCycle]="'h23'"
-      [showSeconds]="false"
-      [locale]="'en-GB'"
-    />
-    <pre>{{ basic()?.toISOString() ?? 'null' }}</pre>
-    <details class="demo__code">
-      <summary>Show code</summary>
-      <pre><code>{{ codeBasic }}</code></pre>
-    </details>
-  </section>
-
-  <section class="demo">
-    <header class="demo__head">
-      <h2>2. Themed via CSS custom properties</h2>
-      <p>
-        Same component, different look — driven entirely by CSS custom
-        properties (<code>--ngx-dt-accent</code>, <code>--ngx-dt-focus</code>,
-        <code>--ngx-dt-border</code>, …). Three brand-matched variants below.
-        Override 2 variables and you have your own — every theme below is still
-        WCAG AAA on contrast.
-      </p>
-    </header>
-
-    <div class="theme-grid">
-      <div class="theme-card theme-card--primary">
-        <span class="theme-card__label">Primary</span>
-        <ngx-datetime-picker [(value)]="themePrimary" [locale]="'en-GB'" />
+    <div class="install">
+      <div class="install__cmd">
+        <span class="dollar">$</span>
+        <span class="text">{{ installCommand }}</span>
       </div>
-
-      <div class="theme-card theme-card--secondary">
-        <span class="theme-card__label">Secondary (dark)</span>
-        <ngx-datetime-picker [(value)]="themeSecondary" [locale]="'en-GB'" />
-      </div>
-
-      <div class="theme-card theme-card--custom">
-        <span class="theme-card__label">Custom (emerald, Polish)</span>
-        <ngx-datetime-picker
-          [(value)]="themeCustom"
-          [locale]="'pl-PL'"
-          [weekStartsOn]="1"
-          [hourCycle]="'h23'"
-          [showSeconds]="true"
-          [placeholder]="'Wybierz datę i godzinę'"
-          [clearLabel]="'Wyczyść'"
-          [confirmLabel]="'Zatwierdź'"
-        />
-      </div>
+      <button class="install__copy" [class.is-copied]="copied()" (click)="copyInstall()">
+        {{ copied() ? 'copied' : 'copy' }}
+      </button>
     </div>
 
-    <details class="demo__code">
-      <summary>Show CSS for all three variants</summary>
-      <pre><code>{{ codeThemed }}</code></pre>
-    </details>
-  </section>
+    <div class="hero__ctas">
+      <a class="btn btn--primary" href="#quickstart">Get started →</a>
+      <a class="btn" href="#examples">View examples</a>
+      <a class="btn" href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
 
-  <section class="demo">
-    <header class="demo__head">
-      <h2>3. Custom trigger &amp; footer templates</h2>
+    <dl class="hero__meta">
+      <div>
+        <dt>Bundle</dt>
+        <dd>44<span class="unit">kB gzip</span></dd>
+      </div>
+      <div>
+        <dt>Deps</dt>
+        <dd>0</dd>
+      </div>
+      <div>
+        <dt>License</dt>
+        <dd>MIT</dd>
+      </div>
+      <div>
+        <dt>A11y</dt>
+        <dd>WCAG 2.2 AAA</dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="demo-host">
+    <div class="demo-host__chrome">
+      <span class="demo-host__dot"></span>
+      <span class="demo-host__dot"></span>
+      <span class="demo-host__dot"></span>
+      <span class="demo-host__file">live · ngx-datetime-picker</span>
+    </div>
+    <div class="demo-host__body">
+      <ngx-datetime-picker
+        [(value)]="demoValue"
+        [hourCycle]="'h23'"
+        [minuteStep]="15"
+        [label]="'When?'"
+        [hint]="'Two-way bound to a writable signal.'"
+        [locale]="'en-GB'"
+      />
       <p>
-        Project named templates (<code>#triggerTpl</code>,
-        <code>#headerTpl</code>, <code>#footerTpl</code>) into the picker to
-        completely replace parts of its UI while keeping the open/close,
-        keyboard navigation, and Signal-Forms integration. The trigger below
-        is a custom pill button; the footer says "Done" instead of the default
-        Clear / OK row. Click the pin to see the panel.
+        <span class="signal">value()</span> →
+        {{ valueLine(demoValue()) }}
       </p>
-    </header>
-    <ngx-datetime-picker
-      [(value)]="custom"
-      [locale]="'en-US'"
-      [hourCycle]="'h12'"
-      [closeOnSelect]="false"
-    >
-      <ng-template #triggerTpl let-display="display" let-toggle="toggle" let-value="value">
-        <button type="button" class="custom-trigger" (click)="toggle()">
-          <span aria-hidden="true">📌</span>
-          <span>{{ value ? display : 'Pick a moment' }}</span>
-        </button>
-      </ng-template>
-      <ng-template #footerTpl let-close="close">
-        <div class="custom-footer">
-          <small>You can render anything here.</small>
-          <button type="button" (click)="close()">Done</button>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── MARQUEE -->
+
+<div class="marquee">
+  <div class="marquee__track">
+    <span><span class="dot"></span>signals-first</span>
+    <span><span class="dot"></span>zero runtime deps</span>
+    <span><span class="dot"></span>standalone component</span>
+    <span><span class="dot"></span>WCAG 2.2 AAA</span>
+    <span><span class="dot"></span>locale-aware</span>
+    <span><span class="dot"></span>IANA time zones</span>
+    <span><span class="dot"></span>keyboard-driven</span>
+    <span><span class="dot"></span>tree-shakable</span>
+    <span><span class="dot"></span>Angular 21 +</span>
+    <!-- duplicate for seamless loop -->
+    <span><span class="dot"></span>signals-first</span>
+    <span><span class="dot"></span>zero runtime deps</span>
+    <span><span class="dot"></span>standalone component</span>
+    <span><span class="dot"></span>WCAG 2.2 AAA</span>
+    <span><span class="dot"></span>locale-aware</span>
+    <span><span class="dot"></span>IANA time zones</span>
+    <span><span class="dot"></span>keyboard-driven</span>
+    <span><span class="dot"></span>tree-shakable</span>
+    <span><span class="dot"></span>Angular 21 +</span>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────── FEATURES -->
+
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="section__eyebrow">01 / What you get</div>
+      <div>
+        <h2 class="section__title">Six things every Angular team kept rebuilding. <em>Now one import.</em></h2>
+      </div>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature__num"><span class="pill">01</span> Primitive</div>
+        <h3 class="feature__title">Two-way <code style="font-size:14px">model()</code></h3>
+        <p class="feature__desc">Bind a writable signal in either direction. No <code style="font-size:13px">ngModel</code> required, no value accessors to write.</p>
+        <div class="feature__snippet"><span class="tk-kw">model</span>&lt;<span class="tk-st">Date | null</span>&gt;(<span class="tk-st">null</span>)</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__num"><span class="pill">02</span> Reactivity</div>
+        <h3 class="feature__title">Computed-friendly</h3>
+        <p class="feature__desc">Read <code style="font-size:13px">value()</code> inside any <code style="font-size:13px">computed</code> or <code style="font-size:13px">effect</code>. Change detection just works.</p>
+        <div class="feature__snippet"><span class="tk-kw">computed</span>(() =&gt; isWeekend(picker.<span class="tk-kw">value</span>()))</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__num"><span class="pill">03</span> Forms</div>
+        <h3 class="feature__title">Signal Forms <em>and</em> Reactive Forms</h3>
+        <p class="feature__desc">Implements <code style="font-size:13px">FormValueControl</code> for <code style="font-size:13px">[formField]</code> AND <code style="font-size:13px">ControlValueAccessor</code> for <code style="font-size:13px">[formControl]</code> / <code style="font-size:13px">[(ngModel)]</code>.</p>
+        <div class="feature__snippet">&lt;ngx-datetime-picker [<span class="tk-kw">formField</span>]=<span class="tk-st">"fm.start"</span>&gt;</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__num"><span class="pill">04</span> i18n &amp; TZ</div>
+        <h3 class="feature__title">Locale + IANA time zones</h3>
+        <p class="feature__desc">Plugs into Angular's <code style="font-size:13px">LOCALE_ID</code> automatically; <code style="font-size:13px">[timeZone]</code> renders any zone while the model stays a UTC <code style="font-size:13px">Date</code>.</p>
+        <div class="feature__snippet"><span class="tk-cm">// → "śr., 17 maj 2026, 14:00 (Warszawa)"</span></div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__num"><span class="pill">05</span> A11y</div>
+        <h3 class="feature__title">WCAG 2.2 AAA</h3>
+        <p class="feature__desc">7:1 contrast tokens by default, 44×44 targets, 3 px focus indicator, roving tabindex, arrow / page / home / end navigation, ARIA grid semantics.</p>
+        <div class="feature__snippet"><span class="tk-kw">role</span>=<span class="tk-st">"grid"</span>  <span class="tk-kw">aria-activedescendant</span>=…</div>
+      </div>
+
+      <div class="feature" style="border-right:0;">
+        <div class="feature__num"><span class="pill">06</span> Themable</div>
+        <h3 class="feature__title">CSS custom properties</h3>
+        <p class="feature__desc">No SCSS compilation, no theme tokens to wire up, no <code style="font-size:13px">::ng-deep</code>. Override variables and you're done.</p>
+        <div class="feature__snippet">--<span class="tk-kw">ngx-dt-accent</span>: <span class="tk-st">#C9542B</span>;</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── QUICK START -->
+
+<section class="section section--alt" id="quickstart">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="section__eyebrow">02 / Quick start</div>
+      <div>
+        <h2 class="section__title">Four steps. <em>No module file.</em></h2>
+        <p class="section__lead" style="margin-top:14px;">From <code style="font-size:14px">npm i</code> to a working picker in under a minute. Click any step to see the code.</p>
+      </div>
+    </div>
+
+    <div class="qs">
+      <ol class="qs__steps">
+        @for (step of quickStartSteps; track step.id) {
+          <li>
+            <button
+              type="button"
+              class="qs__step"
+              [class.is-on]="activeStep() === step.id"
+              (click)="activate(step.id)"
+            >
+              <div class="n">{{ '0' + stepIndex(step.id) }}</div>
+              <div>
+                <h4>{{ step.title }}</h4>
+                <p>{{ step.hint }}</p>
+              </div>
+            </button>
+          </li>
+        }
+      </ol>
+
+      @let active = activeStepObj();
+      <div class="qs__panel">
+        <div class="qs__panel-header">
+          <span>{{ active.file }}</span>
+          <span class="qs__panel-tag">step {{ stepIndex(active.id) }} of {{ quickStartSteps.length }}</span>
         </div>
-      </ng-template>
-    </ngx-datetime-picker>
-    @if (custom()) {
-      <p class="hint">Picked: <code>{{ custom()!.toISOString() }}</code></p>
-    }
-    <details class="demo__code">
-      <summary>Show code</summary>
-      <pre><code>{{ codeCustom }}</code></pre>
-    </details>
-  </section>
+        <div class="qs__panel-body">
+          <pre>{{ active.code }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <section class="demo">
-    <header class="demo__head">
-      <h2>4. Reactive Forms (<code>ControlValueAccessor</code>)</h2>
-      <p>
-        The picker implements <code>ControlValueAccessor</code>, so it drops
-        into classic <code>@angular/forms</code> exactly like a native input:
-        <code>[formControl]</code>, <code>formControlName</code>, or
-        <code>[(ngModel)]</code> all work. <code>disable()</code> /
-        <code>enable()</code> on the <code>FormControl</code> reach the picker
-        via <code>setDisabledState()</code>; closing the panel marks the
-        control as <code>touched</code>. Try the toggle below to see the
-        disabled state flow through.
-      </p>
-    </header>
-    <ngx-datetime-picker
-      [formControl]="reactiveControl"
-      [hourCycle]="'h23'"
-      [minuteStep]="5"
-    />
-    <p class="state-row">
-      <span>Status: <code>{{ reactiveControl.status }}</code></span>
-      <span>Value: <code>{{ reactiveControl.value?.toISOString() ?? 'null' }}</code></span>
-      <span>Touched: <code>{{ reactiveControl.touched }}</code></span>
-    </p>
-    <button type="button" class="primary" (click)="toggleReactiveDisabled()">
-      Toggle disabled
-    </button>
-    <details class="demo__code">
-      <summary>Show code</summary>
-      <pre><code>{{ codeReactive }}</code></pre>
-    </details>
-  </section>
+<!-- ────────────────────────────────────────────────────────── API -->
 
-  <section class="demo">
-    <header class="demo__head">
-      <h2>5. Signal Forms integration (<code>[formField]</code>)</h2>
-      <p>
-        First-class binding to the new Signal Forms API. The picker satisfies
-        the <code>FormValueControl&lt;Date | null&gt;</code> contract, so the
-        <code>[formField]</code> directive wires the two-way value, the
-        validators (<code>required</code> below), and the
-        touched/dirty/invalid state — no <code>ControlValueAccessor</code>
-        boilerplate.
-      </p>
-      <p class="hint">
-        Pick a date below and submit. The form is invalid until a value is
-        set; once it's valid, you'll see the submitted timestamp.
-      </p>
-    </header>
-    <form [formRoot]="meetingForm" (submit)="submitMeeting()">
-      <label class="field-label">
-        <span>Meeting start</span>
-        <ngx-datetime-picker
-          [formField]="startField"
-          [locale]="'en-GB'"
-          [hourCycle]="'h23'"
-          [minuteStep]="15"
-        />
-      </label>
-      @if (startField().touched() && startField().errors().length) {
-        <p class="error">
-          @for (err of startField().errors(); track err) {
-            <span>{{ err.message ?? err.kind }}</span>
-          }
+<section class="section" id="api">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="section__eyebrow">03 / Reference</div>
+      <div>
+        <h2 class="section__title">API surface, in one screen.</h2>
+        <p class="section__lead" style="margin-top:14px;">
+          Everything is typed. Inputs use Angular's <code style="font-size:14px">input()</code>
+          signal helpers. The two-way bound <code style="font-size:14px">value</code> is a
+          <code style="font-size:14px">model()</code> that also satisfies the Signal Forms
+          <code style="font-size:14px">FormValueControl</code> contract and registers a
+          <code style="font-size:14px">ControlValueAccessor</code>.
         </p>
-      }
-      <button type="submit" class="primary">Submit</button>
-      @if (submitState()) {
-        <p class="state">{{ submitState() }}</p>
-      }
-    </form>
-    <details class="demo__code">
-      <summary>Show code</summary>
-      <pre><code>{{ codeSignalForms }}</code></pre>
-    </details>
-  </section>
+      </div>
+    </div>
 
-  <section class="demo">
-    <header class="demo__head">
-      <h2>6. Wizard mode — date first, then time</h2>
-      <p>
-        Flip <code>[wizard]="true"</code> to turn the panel into a
-        two-step flow: pick a date, then pick a time. After clicking a day
-        the panel auto-advances to step 2; a <strong>Back</strong> button (or
-        the step 1 chip in the header) returns to the calendar without
-        discarding the value. Useful when the picker lives in a tight space
-        or when you want a guided UX for less technical users.
-      </p>
-    </header>
-    <ngx-datetime-picker
-      [(value)]="wizardValue"
-      [wizard]="true"
-      [hourCycle]="'h23'"
-      [minuteStep]="15"
-      [locale]="'en-GB'"
-    />
-    @if (wizardValue()) {
-      <p class="hint">Picked: <code>{{ wizardValue()!.toISOString() }}</code></p>
-    }
-    <details class="demo__code">
-      <summary>Show code</summary>
-      <pre><code>{{ codeWizard }}</code></pre>
-    </details>
-  </section>
+    <div class="api">
+      @for (group of apiGroups; track group.title) {
+        <div class="api__group">
+          <div class="api__group-head">
+            <div class="api__group-title" [innerHTML]="group.title"></div>
+            <div class="api__group-meta">{{ group.meta }}</div>
+          </div>
+          @for (row of group.rows; track row.name) {
+            <div class="api__row">
+              <div class="api__name">
+                <span>{{ row.name }}</span>
+                @if (row.sig) {
+                  <span class="sig">{{ row.sig }}</span>
+                }
+              </div>
+              <div class="api__type">{{ row.type }}</div>
+              <div class="api__desc" [innerHTML]="row.desc"></div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>
 
-  <footer class="page__footer">
-    <p>
-      MIT licensed · WCAG 2.2 AAA out of the box ·
-      <a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/blob/main/projects/ngx-signal-datetimepicker/README.md">Full API docs</a> ·
-      <a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/discussions">Discussions</a> ·
-      <a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/issues/new/choose">Report an issue</a>
-    </p>
-  </footer>
-</main>
+<!-- ────────────────────────────────────────────────────────── EXAMPLES -->
+
+<section class="section section--alt" id="examples">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="section__eyebrow">04 / Recipes</div>
+      <div>
+        <h2 class="section__title">Patterns you'll reach for.</h2>
+        <p class="section__lead" style="margin-top:14px;">Four idiomatic examples. Copy them, paste them, ship them.</p>
+      </div>
+    </div>
+
+    <div class="examples">
+      @for (ex of examples; track ex.title) {
+        <article class="example">
+          <header class="example__head">
+            <h3 class="example__title">{{ ex.title }}</h3>
+            <span class="example__tag">{{ ex.tag }}</span>
+          </header>
+          <div class="example__body"><pre>{{ ex.code }}</pre></div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── COMPAT + FAQ -->
+
+<section class="section" id="faq">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="section__eyebrow">05 / Compatibility &amp; FAQ</div>
+      <div>
+        <h2 class="section__title">Will it work in <em>my</em> stack?</h2>
+      </div>
+    </div>
+
+    <div class="compat" style="margin-bottom:32px;">
+      <div class="compat__col">
+        <div class="compat__title">Angular versions</div>
+        <ul class="compat__list">
+          <li><span>Angular 21.x</span><span class="ver">v0.1+</span><span class="ok">✓ tested</span></li>
+          <li><span>Angular 22.x (when released)</span><span class="ver">—</span><span class="ok">✓ planned</span></li>
+          <li><span>Angular ≤ 20.x</span><span class="ver">—</span><span class="ver">unsupported (no Signal Forms)</span></li>
+        </ul>
+      </div>
+      <div class="compat__col">
+        <div class="compat__title">Environment</div>
+        <ul class="compat__list">
+          <li><span>Signal Forms ([formField])</span><span class="ver">—</span><span class="ok">✓ first-class</span></li>
+          <li><span>Reactive Forms ([formControl])</span><span class="ver">—</span><span class="ok">✓ ControlValueAccessor</span></li>
+          <li><span>Zoneless change detection</span><span class="ver">—</span><span class="ok">✓ signals all the way</span></li>
+          <li><span>Standalone components</span><span class="ver">—</span><span class="ok">✓ required</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq">
+      <details open>
+        <summary>Why not just use Angular Material's datepicker?</summary>
+        <div class="faq__body">
+          Material's picker is excellent but built around <code>FormControl</code> and value accessors.
+          If your codebase has moved to signals and zoneless change detection, the impedance mismatch
+          shows up fast: every interaction round-trips through <code>valueChanges</code>.
+          <code>ngx-signal-datetimepicker</code> is just a <code>model()</code> — what you read is what's
+          selected, synchronously. It also ships date + time in one control, which Material's pair
+          (Datepicker + a separate time input) doesn't.
+        </div>
+      </details>
+      <details>
+        <summary>Does it work with Reactive Forms?</summary>
+        <div class="faq__body">
+          Yes — the picker implements <code>ControlValueAccessor</code>, so it drops into
+          <code>[formControl]</code>, <code>formControlName</code>, or <code>[(ngModel)]</code>
+          like a native input. <code>disable()</code> / <code>enable()</code> on the
+          <code>FormControl</code> are honoured via <code>setDisabledState()</code>;
+          closing the panel marks the control as <code>touched</code>.
+        </div>
+      </details>
+      <details>
+        <summary>What's the date library? date-fns? Day.js? Luxon?</summary>
+        <div class="faq__body">
+          None of them. The picker uses the native <code>Date</code> object plus a small internal
+          calendar engine. If you want to format with date-fns or Luxon in your app, nothing stops
+          you — but you don't <em>have</em> to install anything. Bundle stays at ~44 kB gzipped.
+        </div>
+      </details>
+      <details>
+        <summary>Can I theme it?</summary>
+        <div class="faq__body">
+          Override CSS custom properties — <code>--ngx-dt-accent</code>, <code>--ngx-dt-focus</code>,
+          <code>--ngx-dt-target-size</code>, <code>--ngx-dt-radius</code>, and ~15 more. No SCSS
+          compilation, no <code>::ng-deep</code>. The component scopes its styles with <code>:host</code>
+          so you can target it from any parent.
+        </div>
+      </details>
+      <details>
+        <summary>What about timezones?</summary>
+        <div class="faq__body">
+          The <code>[timeZone]</code> input accepts any IANA name (<code>Europe/Warsaw</code>,
+          <code>America/New_York</code>, <code>UTC</code>). The calendar and time inputs render
+          wall-clock time in that zone while the bound <code>Date</code> stays a UTC instant — so
+          serialisation is unambiguous and DST transitions are handled by <code>Intl</code>.
+        </div>
+      </details>
+      <details>
+        <summary>How accessible is it, really?</summary>
+        <div class="faq__body">
+          The defaults target <strong>WCAG 2.2 Level AAA</strong>. Every text token is ≥7:1 contrast
+          on the default surface, every interactive target is ≥44×44 CSS px, the focus indicator is
+          3 px solid with ≥3:1 contrast, the calendar grid uses <code>role="grid"</code> with
+          <code>aria-selected</code>, and arrow / Home / End / PageUp / PageDown / Enter / Space all
+          work. Focus moves into the panel on open and back to the trigger on close.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── FOOTER -->
+
+<footer class="footer">
+  <div class="wrap">
+    <h2 class="footer__big"><em>signal()</em>, not<br/>subscribe.</h2>
+
+    <div class="footer__grid">
+      <div class="footer__col">
+        <h5>About</h5>
+        <p style="font-size:14px; color:var(--ink-2); max-width:36ch; line-height:1.55; margin:0;">
+          An open-source Angular component. Built and maintained by
+          <a href="https://github.com/dominikmodrzejewski99" style="color:var(--ink); border-bottom:1px solid var(--line-strong);">Dominik Modrzejewski</a>.
+          MIT-licensed. Issues and PRs welcome.
+        </p>
+      </div>
+      <div class="footer__col">
+        <h5>Package</h5>
+        <ul>
+          <li><a href="https://www.npmjs.com/package/ngx-signal-datetimepicker">npm</a></li>
+          <li><a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker">GitHub</a></li>
+          <li><a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/blob/main/CHANGELOG.md">Changelog</a></li>
+          <li><a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/releases">Releases</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h5>Docs</h5>
+        <ul>
+          <li><a href="#quickstart">Quick start</a></li>
+          <li><a href="#api">API reference</a></li>
+          <li><a href="#examples">Recipes</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h5>Community</h5>
+        <ul>
+          <li><a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/discussions">Discussions</a></li>
+          <li><a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/issues/new/choose">Report an issue</a></li>
+          <li><a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/blob/main/CONTRIBUTING.md">Contributing</a></li>
+          <li><a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__signoff">
+        <span>© 2026 · MIT · v0.1.1</span>
+        <span>Made with care — no AI dates were harmed</span>
+      </div>
+    </div>
+  </div>
+</footer>
