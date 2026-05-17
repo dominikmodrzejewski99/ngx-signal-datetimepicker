@@ -111,6 +111,37 @@ function currentTime(timeZone?: string | null): TimeValue {
         [ngTemplateOutlet]="tpl"
         [ngTemplateOutletContext]="triggerContext()"
       />
+    } @else if (label()) {
+      <div
+        class="ngx-dt-field"
+        [class.is-floating]="labelFloating()"
+        [class.has-value]="!!value()"
+        [class.has-hint]="!!hint()"
+      >
+        <button
+          type="button"
+          class="ngx-dt-trigger ngx-dt-trigger--floating"
+          [attr.aria-haspopup]="'dialog'"
+          [attr.aria-expanded]="isOpen()"
+          [attr.aria-labelledby]="labelId"
+          [attr.aria-describedby]="hint() ? hintId : null"
+          [disabled]="effectiveDisabled()"
+          (click)="toggle()"
+        >
+          <span
+            class="ngx-dt-trigger__text"
+            [class.is-placeholder]="!value()"
+          >{{ value() ? displayText() : '' }}</span>
+          <span class="ngx-dt-trigger__icon" aria-hidden="true">📅</span>
+        </button>
+        <span
+          class="ngx-dt-field__label"
+          [id]="labelId"
+        >{{ label() }}</span>
+        @if (hint()) {
+          <small class="ngx-dt-field__hint" [id]="hintId">{{ hint() }}</small>
+        }
+      </div>
     } @else {
       <button
         type="button"
@@ -273,6 +304,56 @@ function currentTime(timeZone?: string | null): TimeValue {
     }
     .ngx-dt-btn--primary:hover:not(:disabled) { filter: brightness(0.95); }
     .ngx-dt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* -- Floating-label field -------------------------------------------- */
+    .ngx-dt-field {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      min-width: var(--ngx-dt-trigger-min-width, 16rem);
+    }
+    .ngx-dt-field .ngx-dt-trigger {
+      width: 100%;
+      padding-top: var(--ngx-dt-field-pad-top, 1.125rem);
+      padding-bottom: var(--ngx-dt-field-pad-bottom, 0.375rem);
+    }
+    .ngx-dt-field__label {
+      position: absolute;
+      pointer-events: none;
+      top: 50%;
+      left: 0.625rem;
+      transform: translateY(-50%);
+      padding: 0 0.25rem;
+      background: var(--ngx-dt-input-bg, #fff);
+      color: var(--ngx-dt-muted, #6b7280);
+      font-size: 0.95rem;
+      transform-origin: left center;
+      max-width: calc(100% - 1.5rem);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .ngx-dt-field__label {
+        transition: top 140ms ease, transform 140ms ease, color 140ms ease,
+                    font-size 140ms ease;
+      }
+    }
+    .ngx-dt-field:focus-within .ngx-dt-field__label,
+    .ngx-dt-field.is-floating .ngx-dt-field__label {
+      top: 0;
+      transform: translateY(-50%) scale(0.85);
+      color: var(--ngx-dt-focus, #2563eb);
+    }
+    .ngx-dt-field:focus-within .ngx-dt-trigger,
+    .ngx-dt-field.is-floating .ngx-dt-trigger {
+      border-color: var(--ngx-dt-focus, #2563eb);
+    }
+    .ngx-dt-field__hint {
+      margin: 0.25rem 0.25rem 0;
+      color: var(--ngx-dt-muted, #6b7280);
+      font-size: 0.75rem;
+    }
   `],
 })
 export class NgxDatetimePicker
@@ -370,6 +451,29 @@ export class NgxDatetimePicker
    * so the user gets a sensible default. Set to `false` to start at 00:00.
    */
   readonly suggestCurrentTime = input<boolean>(true);
+
+  /**
+   * Optional floating label. When set, the trigger renders inside a Material-style
+   * outlined field. The label sits over the input area and animates up to the
+   * border when the picker is focused, opened, or has a value.
+   */
+  readonly label = input<string | null>(null);
+  /** Optional helper text rendered under a labeled trigger. */
+  readonly hint = input<string | null>(null);
+
+  /** Unique IDs for label / hint, used by ARIA. */
+  private static seq = 0;
+  protected readonly labelId = `ngx-dt-label-${++NgxDatetimePicker.seq}`;
+  protected readonly hintId = `ngx-dt-hint-${NgxDatetimePicker.seq}`;
+
+  /**
+   * True when the floating label should be in its "raised" position — when
+   * the panel is open, the picker has a value, or the trigger has focus.
+   * (Focus is also handled in pure CSS via `:focus-within`.)
+   */
+  protected readonly labelFloating = computed(
+    () => this.isOpen() || !!this.value(),
+  );
 
   // Template slots
   readonly triggerTpl = contentChild<TemplateRef<NgxDatetimeTriggerContext>>('triggerTpl');

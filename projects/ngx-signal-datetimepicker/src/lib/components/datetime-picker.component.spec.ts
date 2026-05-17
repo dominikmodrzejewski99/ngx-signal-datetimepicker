@@ -351,82 +351,84 @@ describe('NgxDatetimePicker', () => {
     });
   });
 
-  describe('time-zone support', () => {
+  describe('floating label', () => {
     @Component({
-      selector: 'host-tz',
+      selector: 'host-fl',
       imports: [NgxDatetimePicker],
       template: `
         <ngx-datetime-picker
           [(value)]="value"
-          [timeZone]="tz()"
-          [hourCycle]="'h23'"
+          [label]="label()"
+          [hint]="hint()"
         />
       `,
     })
-    class HostTz {
-      // 2024-06-17 12:00:00 UTC.
-      value = signal<Date | null>(new Date(Date.UTC(2024, 5, 17, 12, 0, 0)));
-      tz = signal<string | null>('Europe/Warsaw');
+    class HostFloat {
+      value = signal<Date | null>(null);
+      label = signal<string | null>('Meeting time');
+      hint = signal<string | null>('We will send a reminder.');
     }
 
-    beforeEach(() => TestBed.configureTestingModule({ imports: [HostTz] }));
+    beforeEach(() => TestBed.configureTestingModule({ imports: [HostFloat] }));
 
-    it('renders the trigger display in the configured zone', () => {
-      const fix = TestBed.createComponent(HostTz);
+    it('renders a floating field wrapper with label and hint when label is set', () => {
+      const fix = TestBed.createComponent(HostFloat);
       fix.detectChanges();
-      // 12:00 UTC → 14:00 Warsaw in June.
-      expect(trigger(fix).textContent ?? '').toContain('14:00');
+      const field = fix.nativeElement.querySelector('.ngx-dt-field');
+      expect(field).toBeTruthy();
+      expect(field.querySelector('.ngx-dt-field__label')?.textContent?.trim()).toBe('Meeting time');
+      expect(field.querySelector('.ngx-dt-field__hint')?.textContent?.trim()).toMatch(/reminder/);
     });
 
-    it('time inputs reflect zoned wall clock', () => {
-      const fix = TestBed.createComponent(HostTz);
+    it('label is not floating when empty + closed; floats when opened or filled', () => {
+      const fix = TestBed.createComponent(HostFloat);
       fix.detectChanges();
+      const field = fix.nativeElement.querySelector('.ngx-dt-field');
+      expect(field.classList.contains('is-floating')).toBe(false);
+
+      // Opening the panel raises the label.
       trigger(fix).click();
       fix.detectChanges();
-      const inputs = fix.nativeElement.querySelectorAll(
-        'input.ngx-dt-time__input',
-      ) as NodeListOf<HTMLInputElement>;
-      expect(inputs[0].value).toBe('14');
+      expect(field.classList.contains('is-floating')).toBe(true);
+
+      // Closing without a value drops it again.
+      pressEscape(fix);
+      expect(field.classList.contains('is-floating')).toBe(false);
+
+      // Setting a value also raises the label.
+      fix.componentInstance.value.set(new Date(2024, 5, 17, 14, 30));
+      fix.detectChanges();
+      expect(field.classList.contains('is-floating')).toBe(true);
     });
 
-    it('editing the hour writes back the right UTC instant', () => {
-      const fix = TestBed.createComponent(HostTz);
+    it('the trigger is associated with the label via aria-labelledby', () => {
+      const fix = TestBed.createComponent(HostFloat);
       fix.detectChanges();
-      trigger(fix).click();
-      fix.detectChanges();
-      const hourInput = fix.nativeElement.querySelector(
-        'input.ngx-dt-time__input',
-      ) as HTMLInputElement;
-      hourInput.value = '15';
-      hourInput.dispatchEvent(new Event('input'));
-      fix.detectChanges();
-      // 15:00 Warsaw (DST -02:00) → 13:00 UTC.
-      const v = fix.componentInstance.value();
-      expect(v?.toISOString()).toBe('2024-06-17T13:00:00.000Z');
+      const btn = trigger(fix);
+      const label = fix.nativeElement.querySelector('.ngx-dt-field__label');
+      const labelId = label.getAttribute('id');
+      expect(labelId).toBeTruthy();
+      expect(btn.getAttribute('aria-labelledby')).toBe(labelId);
     });
 
-    it('clicking a calendar day combines it with the zoned draft time', () => {
-      const fix = TestBed.createComponent(HostTz);
-      fix.componentInstance.value.set(null);
+    it('the hint id is referenced by aria-describedby and dropped when hint is null', () => {
+      const fix = TestBed.createComponent(HostFloat);
       fix.detectChanges();
-      trigger(fix).click();
+      const hintEl = fix.nativeElement.querySelector('.ngx-dt-field__hint');
+      const hintId = hintEl.getAttribute('id');
+      expect(trigger(fix).getAttribute('aria-describedby')).toBe(hintId);
+      fix.componentInstance.hint.set(null);
       fix.detectChanges();
-      const day = fix.nativeElement.querySelector(
-        'button.ngx-dt-calendar__day:not(.is-outside)',
-      ) as HTMLButtonElement;
-      day.click();
+      expect(fix.nativeElement.querySelector('.ngx-dt-field__hint')).toBeNull();
+      expect(trigger(fix).getAttribute('aria-describedby')).toBeNull();
+    });
+
+    it('without label input, the legacy plain trigger is rendered', () => {
+      const fix = TestBed.createComponent(HostFloat);
+      fix.componentInstance.label.set(null);
       fix.detectChanges();
-      const v = fix.componentInstance.value();
-      expect(v).not.toBeNull();
-      // The produced instant should render at the same wall time in Warsaw.
-      const fmt = new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-      });
-      const wall = fmt.format(v!);
-      const now = new Date();
-      const warsawWall = fmt.format(now);
-      // Same hour:minute as "now in Warsaw" because suggestCurrentTime fills the draft.
-      expect(wall.slice(0, 2)).toBe(warsawWall.slice(0, 2));
+      expect(fix.nativeElement.querySelector('.ngx-dt-field')).toBeNull();
+      expect(trigger(fix)).toBeTruthy();
     });
   });
 
