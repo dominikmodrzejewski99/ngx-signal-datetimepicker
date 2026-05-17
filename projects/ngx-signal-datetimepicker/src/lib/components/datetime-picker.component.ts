@@ -243,6 +243,7 @@ function currentTime(timeZone?: string | null): TimeValue {
       display: inline-flex; align-items: center; gap: 0.5rem;
       padding: 0.625rem 0.875rem;
       min-height: var(--ngx-dt-target-size, 2.75rem);
+      max-width: 100%;
       border: 1px solid var(--ngx-dt-border, #6b7280);
       background: var(--ngx-dt-input-bg, #fff);
       color: var(--ngx-dt-fg, #111827);
@@ -259,7 +260,16 @@ function currentTime(timeZone?: string | null): TimeValue {
       outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
       outline-offset: 2px;
     }
+    .ngx-dt-trigger__text {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+    }
     .ngx-dt-trigger__text.is-placeholder { color: var(--ngx-dt-muted, #374151); }
+    .ngx-dt-trigger__icon { flex: 0 0 auto; }
 
     .ngx-dt-panel {
       position: absolute;
