@@ -3,7 +3,9 @@ import {
   Component,
   computed,
   contentChild,
+  effect,
   ElementRef,
+  forwardRef,
   inject,
   input,
   model,
@@ -11,6 +13,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FormValueControl } from '@angular/forms/signals';
 import { NgTemplateOutlet } from '@angular/common';
 import {
@@ -78,10 +81,17 @@ function currentTime(): TimeValue {
   selector: 'ngx-datetime-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgxDatetimeCalendar, NgxDatetimeTime, NgTemplateOutlet],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NgxDatetimePicker),
+      multi: true,
+    },
+  ],
   host: {
     'class': 'ngx-dt-host',
     '[class.is-open]': 'isOpen()',
-    '[class.is-disabled]': 'disabled()',
+    '[class.is-disabled]': 'effectiveDisabled()',
     '[attr.data-cycle]': 'hourCycle()',
     '(document:click)': 'onDocumentClick($event)',
     '(keydown.escape)': 'close()',
@@ -98,7 +108,7 @@ function currentTime(): TimeValue {
         class="ngx-dt-trigger"
         [attr.aria-haspopup]="'dialog'"
         [attr.aria-expanded]="isOpen()"
-        [disabled]="disabled()"
+        [disabled]="effectiveDisabled()"
         (click)="toggle()"
       >
         <span class="ngx-dt-trigger__text" [class.is-placeholder]="!value()">
@@ -141,7 +151,7 @@ function currentTime(): TimeValue {
             [showSeconds]="showSeconds()"
             [minuteStep]="minuteStep()"
             [secondStep]="secondStep()"
-            [disabled]="disabled()"
+            [disabled]="effectiveDisabled()"
             [readonly]="readonly()"
             [presets]="effectivePresets()"
             [wheel]="wheelStep()"
@@ -159,20 +169,20 @@ function currentTime(): TimeValue {
               type="button"
               class="ngx-dt-btn ngx-dt-btn--ghost"
               (click)="setNow()"
-              [disabled]="disabled() || readonly()"
+              [disabled]="effectiveDisabled() || readonly()"
             >{{ nowLabel() }}</button>
             <span class="ngx-dt-actions__spacer"></span>
             <button
               type="button"
               class="ngx-dt-btn ngx-dt-btn--ghost"
               (click)="clear()"
-              [disabled]="disabled() || readonly() || !value()"
+              [disabled]="effectiveDisabled() || readonly() || !value()"
             >{{ clearLabel() }}</button>
             <button
               type="button"
               class="ngx-dt-btn ngx-dt-btn--primary"
               (click)="confirm()"
-              [disabled]="disabled() || readonly()"
+              [disabled]="effectiveDisabled() || readonly()"
             >{{ confirmLabel() }}</button>
           </div>
         }
@@ -255,11 +265,18 @@ function currentTime(): TimeValue {
     .ngx-dt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   `],
 })
-export class NgxDatetimePicker implements FormValueControl<Date | null> {
+export class NgxDatetimePicker
+  implements FormValueControl<Date | null>, ControlValueAccessor
+{
   private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  // Signal Forms contract
-  readonly value = model.required<Date | null>();
+  /**
+   * Two-way bound value. Acts as a `ModelSignal<Date | null>` so the component
+   * satisfies Signal Forms' `FormValueControl<Date | null>` contract while also
+   * being drivable from a parent template or from Reactive Forms via
+   * `ControlValueAccessor`.
+   */
+  readonly value = model<Date | null>(null);
 
   // Standard FormUiControl signals (auto-bound by [formField])
   readonly disabled = input<boolean>(false);
@@ -269,6 +286,47 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
   readonly maxDate = input<Date | null>(null);
   readonly name = input<string>('');
   readonly touched = model<boolean>(false);
+
+  /** Disabled state driven by Reactive Forms via setDisabledState(). */
+  private readonly cvaDisabled = signal(false);
+  /** Last value pushed in by writeValue — used to avoid bouncing it back through onChange. */
+  private cvaWriting = false;
+
+  /** Combined disabled state used by the template / public API. */
+  protected readonly effectiveDisabled = computed(
+    () => this.disabled() || this.cvaDisabled(),
+  );
+
+  private cvaOnChange: (value: Date | null) => void = () => undefined;
+  private cvaOnTouched: () => void = () => undefined;
+
+  constructor() {
+    // Push internal value changes to the Reactive Forms control.
+    effect(() => {
+      const value = this.value();
+      if (this.cvaWriting) {
+        this.cvaWriting = false;
+        return;
+      }
+      this.cvaOnChange(value);
+    });
+  }
+
+  // -- ControlValueAccessor ---------------------------------------------------
+
+  writeValue(value: Date | null): void {
+    this.cvaWriting = true;
+    this.value.set(value);
+  }
+  registerOnChange(fn: (value: Date | null) => void): void {
+    this.cvaOnChange = fn;
+  }
+  registerOnTouched(fn: () => void): void {
+    this.cvaOnTouched = fn;
+  }
+  setDisabledState(isDisabled: boolean): void {
+    this.cvaDisabled.set(isDisabled);
+  }
 
   // Customization inputs
   readonly locale = input<string>('en-US');
@@ -327,7 +385,7 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
     display: this.displayText(),
     open: () => this.open(),
     toggle: () => this.toggle(),
-    disabled: this.disabled(),
+    disabled: this.effectiveDisabled(),
   }));
 
   protected readonly panelContext = computed<NgxDatetimePanelContext>(() => ({
@@ -336,7 +394,7 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
   }));
 
   open(): void {
-    if (this.disabled()) return;
+    if (this.effectiveDisabled()) return;
     if (!this.value() && this.suggestCurrentTime()) {
       this.draftTime.set(currentTime());
     }
@@ -347,6 +405,7 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
     if (this.isOpen()) {
       this.isOpen.set(false);
       this.touched.set(true);
+      this.cvaOnTouched();
     }
   }
 
@@ -355,7 +414,7 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
   }
 
   clear(): void {
-    if (this.disabled() || this.readonly()) return;
+    if (this.effectiveDisabled() || this.readonly()) return;
     this.value.set(null);
     if (this.suggestCurrentTime()) {
       this.draftTime.set(currentTime());
@@ -368,7 +427,7 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
   }
 
   setNow(): void {
-    if (this.disabled() || this.readonly()) return;
+    if (this.effectiveDisabled() || this.readonly()) return;
     const clamped = clampDate(new Date(), this.minDate(), this.maxDate());
     this.value.set(clamped);
     this.draftTime.set({
@@ -379,7 +438,7 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
   }
 
   protected onDateSelect(date: Date): void {
-    if (this.disabled() || this.readonly()) return;
+    if (this.effectiveDisabled() || this.readonly()) return;
     const current = this.value();
     const t = current
       ? { hours: current.getHours(), minutes: current.getMinutes(), seconds: current.getSeconds() }
@@ -392,7 +451,7 @@ export class NgxDatetimePicker implements FormValueControl<Date | null> {
   }
 
   protected onTimeChange(time: TimeValue): void {
-    if (this.disabled() || this.readonly()) return;
+    if (this.effectiveDisabled() || this.readonly()) return;
     this.draftTime.set(time);
     const current = this.value();
     if (!current) return; // wait until a date is picked
