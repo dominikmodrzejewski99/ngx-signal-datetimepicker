@@ -210,7 +210,8 @@ code, pre { font-family: var(--font-mono); font-size: 0.92em; }
   background: var(--bg-card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  overflow: hidden;
+  /* No overflow:hidden — the picker's popup panel must escape the card */
+  position: relative;
   box-shadow: 0 1px 0 #ffffff66 inset, 0 24px 60px -30px #0000002e;
 }
 html[data-theme='dark'] .demo-host { box-shadow: 0 1px 0 #ffffff10 inset, 0 24px 60px -30px #00000080; }
@@ -219,6 +220,7 @@ html[data-theme='dark'] .demo-host { box-shadow: 0 1px 0 #ffffff10 inset, 0 24px
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
   background: var(--bg-2);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
 }
 .demo-host__dot { width: 10px; height: 10px; border-radius: 999px; background: var(--line-strong); }
 .demo-host__file {
@@ -228,7 +230,20 @@ html[data-theme='dark'] .demo-host { box-shadow: 0 1px 0 #ffffff10 inset, 0 24px
   color: var(--muted);
 }
 .demo-host__body { padding: 22px; }
-.demo-host__body ngx-datetime-picker { width: 100%; --ngx-dt-trigger-min-width: 0; }
+.demo-host__body ngx-datetime-picker {
+  display: block;
+  width: 100%;
+  --ngx-dt-trigger-min-width: 0;
+}
+/* The library's <div class="ngx-dt-field"> wrapper (rendered when [label]
+   is set) is inline-flex by default — force it block-level so it fills
+   the demo card and the trigger/label/hint stack predictably. */
+.demo-host__body ngx-datetime-picker .ngx-dt-field {
+  display: flex;
+  width: 100%;
+}
+.demo-host__body ngx-datetime-picker .ngx-dt-field .ngx-dt-trigger { width: 100%; }
+.demo-host__body ngx-datetime-picker .ngx-dt-field__hint { display: block; margin-top: 0.375rem; }
 .demo-host__body p { margin: 0.75rem 0 0; font-family: var(--font-mono); font-size: 12px; color: var(--muted); word-break: break-all; }
 .demo-host__body p .signal { color: var(--signal); }
 .demo-host__hint {
