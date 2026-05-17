@@ -159,3 +159,97 @@ export function to12Hour(hour: number): { hour: number; period: 'AM' | 'PM' } {
   const h = hour % 12 === 0 ? 12 : hour % 12;
   return { hour: h, period };
 }
+
+// -- Time-zone helpers ---------------------------------------------------------
+
+export interface ZonedParts {
+  year: number;
+  /** 0-based, matches Date#getMonth(). */
+  month: number;
+  day: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+/** Returns the wall-clock components of `date` as seen in the given IANA `timeZone`. */
+export function getZonedParts(date: Date, timeZone: string): ZonedParts {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+  const parts: Record<string, string> = {};
+  for (const p of fmt.formatToParts(date)) {
+    if (p.type !== 'literal') parts[p.type] = p.value;
+  }
+  return {
+    year: Number(parts['year']),
+    month: Number(parts['month']) - 1,
+    day: Number(parts['day']),
+    hours: Number(parts['hour']) === 24 ? 0 : Number(parts['hour']),
+    minutes: Number(parts['minute']),
+    seconds: Number(parts['second']),
+  };
+}
+
+/**
+ * Returns the UTC instant whose wall-clock representation in `timeZone` equals
+ * the provided parts. Uses two iterations to handle DST boundaries.
+ */
+export function fromZonedParts(parts: ZonedParts, timeZone: string): Date {
+  const target = Date.UTC(
+    parts.year,
+    parts.month,
+    parts.day,
+    parts.hours,
+    parts.minutes,
+    parts.seconds,
+  );
+  let guess = new Date(target);
+  for (let i = 0; i < 2; i++) {
+    const zoned = getZonedParts(guess, timeZone);
+    const observed = Date.UTC(
+      zoned.year,
+      zoned.month,
+      zoned.day,
+      zoned.hours,
+      zoned.minutes,
+      zoned.seconds,
+    );
+    const offset = target - observed;
+    if (offset === 0) return guess;
+    guess = new Date(guess.getTime() + offset);
+  }
+  return guess;
+}
+
+/**
+ * Returns a "facade" Date whose local-time accessors return the zoned wall-clock
+ * values of `date` in `timeZone`. NOT the same instant — useful for feeding a
+ * TZ-agnostic UI such as the calendar grid.
+ */
+export function toZonedFacade(date: Date, timeZone: string): Date {
+  const p = getZonedParts(date, timeZone);
+  return new Date(p.year, p.month, p.day, p.hours, p.minutes, p.seconds);
+}
+
+/** Inverse of {@link toZonedFacade}: convert a facade Date back to a real UTC instant. */
+export function fromZonedFacade(facade: Date, timeZone: string): Date {
+  return fromZonedParts(
+    {
+      year: facade.getFullYear(),
+      month: facade.getMonth(),
+      day: facade.getDate(),
+      hours: facade.getHours(),
+      minutes: facade.getMinutes(),
+      seconds: facade.getSeconds(),
+    },
+    timeZone,
+  );
+}
