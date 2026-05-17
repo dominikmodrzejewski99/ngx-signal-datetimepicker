@@ -1,0 +1,36 @@
+{
+  "name": "ngx-signal-datetimepicker",
+  "version": "0.1.0",
+  "description": "Headless, themeable Angular datetime picker (date + time in one control) built on Signal Forms.",
+  "keywords": [
+    "angular",
+    "signal-forms",
+    "signals",
+    "datepicker",
+    "timepicker",
+    "datetimepicker",
+    "datetime",
+    "calendar",
+    "form-control",
+    "a11y"
+  ],
+  "author": "Dominik Modrzejewski <dominikmodrzejewski@wp.pl>",
+  "license": "MIT",
+  "homepage": "https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/issues"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=21.0.0",
+    "@angular/core": ">=21.0.0",
+    "@angular/forms": ">=21.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
