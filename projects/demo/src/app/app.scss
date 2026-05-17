@@ -104,10 +104,8 @@ pre {
 .theme-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: 1fr;
-}
-@media (min-width: 720px) {
-  .theme-grid { grid-template-columns: repeat(3, 1fr); }
+  /* Auto-fit: cards stay >=220 px wide; stack to 1 column when there's no room */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 .theme-card {
   display: flex; flex-direction: column;
@@ -116,6 +114,10 @@ pre {
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   background: #fff;
+  min-width: 0;          /* allow shrinking inside the grid track */
+  overflow: hidden;      /* keep the trigger from spilling beyond the card */
+  /* Shrink the picker's trigger min-width to whatever room the card gives it */
+  --ngx-dt-trigger-min-width: 0;
 }
 .theme-card__label {
   font-size: 0.8125rem;
@@ -125,9 +127,11 @@ pre {
   color: #4b5563;
 }
 /* Picker inside cards fills width */
-.theme-card ngx-datetime-picker { width: 100%; }
-.theme-card ngx-datetime-picker .ngx-dt-trigger,
-.theme-card ngx-datetime-picker button.ngx-dt-trigger { width: 100%; min-width: 0; }
+.theme-card ngx-datetime-picker {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
 
 /* Primary — keep the AAA defaults */
 .theme-card--primary ngx-datetime-picker {
