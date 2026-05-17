@@ -172,87 +172,98 @@ type View = 'days' | 'months' | 'years';
     .ngx-dt-calendar__title {
       flex: 1; text-align: center; font-weight: 600;
       background: transparent; border: 1px solid transparent;
-      color: var(--ngx-dt-fg, inherit);
-      padding: 0.375rem 0.5rem;
+      color: var(--ngx-dt-fg, #111827);
+      padding: 0.5rem 0.75rem;
+      min-height: var(--ngx-dt-target-size, 2.75rem);
       border-radius: var(--ngx-dt-radius, 0.5rem);
       cursor: pointer; font: inherit; font-weight: 600;
     }
-    .ngx-dt-calendar__title:hover { background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.05)); }
+    .ngx-dt-calendar__title:hover { background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06)); }
     .ngx-dt-calendar__title:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb); outline-offset: 2px;
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
+      outline-offset: 2px;
     }
     .ngx-dt-calendar__nav {
       border: 1px solid transparent;
       background: transparent;
-      color: var(--ngx-dt-fg, inherit);
-      width: 2rem; height: 2rem;
+      color: var(--ngx-dt-fg, #111827);
+      width: var(--ngx-dt-target-size, 2.75rem);
+      height: var(--ngx-dt-target-size, 2.75rem);
       border-radius: var(--ngx-dt-radius, 0.5rem);
       cursor: pointer;
       display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.125rem; line-height: 1;
+      font-size: 1.25rem; line-height: 1;
     }
-    .ngx-dt-calendar__nav:hover { background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.05)); }
+    .ngx-dt-calendar__nav:hover { background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06)); }
     .ngx-dt-calendar__nav:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb); outline-offset: 2px;
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
+      outline-offset: 2px;
     }
 
     .ngx-dt-calendar__weekdays,
     .ngx-dt-calendar__grid {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(7, minmax(var(--ngx-dt-target-size, 2.75rem), 1fr));
       gap: 2px;
     }
     .ngx-dt-calendar__weekday {
       text-align: center;
-      font-size: 0.7rem;
+      font-size: 0.8125rem;
       letter-spacing: 0.02em;
       text-transform: uppercase;
-      color: var(--ngx-dt-muted, #6b7280);
+      color: var(--ngx-dt-muted, #374151);
       padding: 0.25rem 0;
     }
     .ngx-dt-calendar__day,
     .ngx-dt-calendar__cell {
       border: 1px solid transparent;
       background: transparent;
-      color: var(--ngx-dt-fg, inherit);
+      color: var(--ngx-dt-fg, #111827);
       border-radius: var(--ngx-dt-radius, 0.5rem);
       cursor: pointer; font: inherit;
     }
     .ngx-dt-calendar__day {
-      aspect-ratio: 1;
+      min-width: var(--ngx-dt-target-size, 2.75rem);
+      min-height: var(--ngx-dt-target-size, 2.75rem);
       display: inline-flex; align-items: center; justify-content: center;
     }
     .ngx-dt-calendar__day:hover:not(:disabled),
     .ngx-dt-calendar__cell:hover:not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.05));
+      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
     }
     .ngx-dt-calendar__day:focus-visible,
     .ngx-dt-calendar__cell:focus-visible {
-      outline: 2px solid var(--ngx-dt-focus, #2563eb); outline-offset: 1px;
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
+      outline-offset: 1px;
     }
     .ngx-dt-calendar__day.is-outside,
-    .ngx-dt-calendar__cell.is-outside { color: var(--ngx-dt-muted, #9ca3af); }
+    .ngx-dt-calendar__cell.is-outside { color: var(--ngx-dt-muted, #374151); opacity: 0.7; }
     .ngx-dt-calendar__day.is-today,
     .ngx-dt-calendar__cell.is-today {
       font-weight: 700;
-      box-shadow: inset 0 0 0 1px var(--ngx-dt-focus, #2563eb);
+      box-shadow: inset 0 0 0 2px var(--ngx-dt-focus, #1d4ed8);
     }
     .ngx-dt-calendar__day.is-selected,
     .ngx-dt-calendar__cell.is-selected {
-      background: var(--ngx-dt-accent, #2563eb);
+      background: var(--ngx-dt-accent, #1d4ed8);
       color: var(--ngx-dt-accent-fg, #fff);
     }
     .ngx-dt-calendar__day.is-disabled,
-    .ngx-dt-calendar__day:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ngx-dt-calendar__day:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .ngx-dt-calendar__months {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(var(--ngx-dt-target-size, 2.75rem), 1fr));
+      gap: 4px;
     }
     .ngx-dt-calendar__years {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(var(--ngx-dt-target-size, 2.75rem), 1fr));
+      gap: 4px;
     }
     .ngx-dt-calendar__cell {
       padding: 0.75rem 0.25rem;
+      min-height: var(--ngx-dt-target-size, 2.75rem);
       text-align: center;
     }
   `],
