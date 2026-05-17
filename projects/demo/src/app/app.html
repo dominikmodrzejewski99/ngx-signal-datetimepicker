@@ -43,25 +43,40 @@
       <p>
         Same component, different look — driven entirely by CSS custom
         properties (<code>--ngx-dt-accent</code>, <code>--ngx-dt-focus</code>,
-        <code>--ngx-dt-border</code>, …). Polish locale, 24h clock with
-        seconds, custom button labels — everything is an input. Override 2
-        variables and you have a brand-matched picker.
+        <code>--ngx-dt-border</code>, …). Three brand-matched variants below.
+        Override 2 variables and you have your own — every theme below is still
+        WCAG AAA on contrast.
       </p>
     </header>
-    <div class="themed">
-      <ngx-datetime-picker
-        [(value)]="themed"
-        [locale]="'pl-PL'"
-        [weekStartsOn]="1"
-        [hourCycle]="'h23'"
-        [showSeconds]="true"
-        [placeholder]="'Wybierz datę i godzinę'"
-        [clearLabel]="'Wyczyść'"
-        [confirmLabel]="'Zatwierdź'"
-      />
+
+    <div class="theme-grid">
+      <div class="theme-card theme-card--primary">
+        <span class="theme-card__label">Primary</span>
+        <ngx-datetime-picker [(value)]="themePrimary" [locale]="'en-GB'" />
+      </div>
+
+      <div class="theme-card theme-card--secondary">
+        <span class="theme-card__label">Secondary (dark)</span>
+        <ngx-datetime-picker [(value)]="themeSecondary" [locale]="'en-GB'" />
+      </div>
+
+      <div class="theme-card theme-card--custom">
+        <span class="theme-card__label">Custom (emerald, Polish)</span>
+        <ngx-datetime-picker
+          [(value)]="themeCustom"
+          [locale]="'pl-PL'"
+          [weekStartsOn]="1"
+          [hourCycle]="'h23'"
+          [showSeconds]="true"
+          [placeholder]="'Wybierz datę i godzinę'"
+          [clearLabel]="'Wyczyść'"
+          [confirmLabel]="'Zatwierdź'"
+        />
+      </div>
     </div>
+
     <details class="demo__code">
-      <summary>Show code</summary>
+      <summary>Show CSS for all three variants</summary>
       <pre><code>{{ codeThemed }}</code></pre>
     </details>
   </section>

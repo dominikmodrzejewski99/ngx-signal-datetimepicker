@@ -16,7 +16,9 @@ interface MeetingModel {
 })
 export class App {
   protected readonly basic = signal<Date | null>(new Date());
-  protected readonly themed = signal<Date | null>(null);
+  protected readonly themePrimary = signal<Date | null>(null);
+  protected readonly themeSecondary = signal<Date | null>(null);
+  protected readonly themeCustom = signal<Date | null>(null);
   protected readonly custom = signal<Date | null>(null);
 
   protected readonly meeting = signal<MeetingModel>({ start: null });
@@ -63,24 +65,42 @@ export class App {
   protected basic = signal<Date | null>(new Date());
 }`;
 
-  protected readonly codeThemed = `<ngx-datetime-picker
-  [(value)]="themed"
-  [locale]="'pl-PL'"
-  [hourCycle]="'h23'"
-  [showSeconds]="true"
-  [placeholder]="'Wybierz datę i godzinę'"
-  [clearLabel]="'Wyczyść'"
-  [confirmLabel]="'Zatwierdź'"
-/>
+  protected readonly codeThemed = `/* Primary — the default AAA blue, no overrides needed */
+.theme-card--primary ngx-datetime-picker {
+  --ngx-dt-accent: #1d4ed8;
+  --ngx-dt-focus:  #1d4ed8;
+  --ngx-dt-border: #6b7280;
+}
 
-<!-- Override the CSS custom properties: -->
-<style>
-  .themed ngx-datetime-picker {
-    --ngx-dt-accent: #ec4899;
-    --ngx-dt-focus:  #ec4899;
-    --ngx-dt-radius: 0.75rem;
-  }
-</style>`;
+/* Secondary — dark / slate */
+.theme-card--secondary {
+  background: #0f172a;
+  color: #f8fafc;
+}
+.theme-card--secondary ngx-datetime-picker {
+  --ngx-dt-fg:          #f8fafc;
+  --ngx-dt-muted:       #cbd5e1;
+  --ngx-dt-border:      #475569;
+  --ngx-dt-input-bg:    #1e293b;
+  --ngx-dt-panel-bg:    #1e293b;
+  --ngx-dt-nav-bg-hover: rgba(255,255,255,0.08);
+  --ngx-dt-accent:      #38bdf8;
+  --ngx-dt-accent-fg:   #0f172a;
+  --ngx-dt-focus:       #38bdf8;
+  --ngx-dt-shadow:      0 12px 32px rgba(0,0,0,0.5);
+}
+
+/* Custom — emerald, chunky radii */
+.theme-card--custom ngx-datetime-picker {
+  --ngx-dt-accent:    #047857;
+  --ngx-dt-accent-fg: #ecfdf5;
+  --ngx-dt-focus:     #047857;
+  --ngx-dt-border:    #6ee7b7;
+  --ngx-dt-panel-bg:  #f0fdf4;
+  --ngx-dt-radius:    0.75rem;
+  --ngx-dt-radius-lg: 1rem;
+  --ngx-dt-shadow:    0 12px 30px rgba(4,120,87,0.18);
+}`;
 
   protected readonly codeCustom = `<ngx-datetime-picker [(value)]="custom" [hourCycle]="'h12'">
   <ng-template
