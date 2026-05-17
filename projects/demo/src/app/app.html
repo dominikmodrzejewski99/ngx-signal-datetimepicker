@@ -57,7 +57,25 @@
   </section>
 
   <section class="demo">
-    <h2>4. Signal Forms integration</h2>
+    <h2>4. Reactive Forms (ControlValueAccessor)</h2>
+    <ngx-datetime-picker
+      [formControl]="reactiveControl"
+      [hourCycle]="'h23'"
+      [minuteStep]="5"
+    />
+    <p>
+      Status:
+      <code>{{ reactiveControl.status }}</code>,
+      value:
+      <code>{{ reactiveControl.value?.toISOString() ?? 'null' }}</code>
+    </p>
+    <button type="button" class="primary" (click)="toggleReactiveDisabled()">
+      Toggle disabled
+    </button>
+  </section>
+
+  <section class="demo">
+    <h2>5. Signal Forms integration</h2>
     <form [formRoot]="meetingForm" (submit)="submitMeeting()">
       <label class="field-label">
         <span>Meeting start</span>
