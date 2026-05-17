@@ -1,0 +1,60 @@
+name: Bug report
+description: Something doesn't behave as expected
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The more detail you can
+        provide, the faster we can fix it. **A minimal reproduction is the
+        single most helpful thing you can attach.**
+
+  - type: input
+    id: version
+    attributes:
+      label: Library version
+      placeholder: ngx-signal-datetimepicker @ 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: angular
+    attributes:
+      label: Angular version
+      placeholder: 21.2.13
+    validations:
+      required: true
+
+  - type: dropdown
+    id: forms
+    attributes:
+      label: How are you binding the picker?
+      options:
+        - Signal Forms ([formField])
+        - Reactive Forms ([formControl] / formControlName)
+        - Template-driven ([(ngModel)])
+        - Standalone ([(value)])
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: A StackBlitz / minimal repo URL is ideal. Otherwise paste the smallest snippet that shows the bug.
+      placeholder: https://stackblitz.com/edit/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Browser, OS, anything noteworthy
