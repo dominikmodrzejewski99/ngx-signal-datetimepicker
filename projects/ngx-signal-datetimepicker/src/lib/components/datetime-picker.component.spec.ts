@@ -432,6 +432,130 @@ describe('NgxDatetimePicker', () => {
     });
   });
 
+  describe('wizard mode', () => {
+    @Component({
+      selector: 'host-wiz',
+      imports: [NgxDatetimePicker],
+      template: `
+        <ngx-datetime-picker [(value)]="value" [wizard]="true" />
+      `,
+    })
+    class HostWizard {
+      value = signal<Date | null>(null);
+    }
+
+    beforeEach(() => TestBed.configureTestingModule({ imports: [HostWizard] }));
+
+    function openPanel(fix: ComponentFixture<HostWizard>): void {
+      trigger(fix).click();
+      fix.detectChanges();
+    }
+
+    it('opens on the date step with the calendar visible and the time hidden', () => {
+      const fix = TestBed.createComponent(HostWizard);
+      fix.detectChanges();
+      openPanel(fix);
+      expect(fix.nativeElement.querySelector('ngx-datetime-calendar')).toBeTruthy();
+      expect(fix.nativeElement.querySelector('ngx-datetime-time')).toBeNull();
+      // Step indicator is rendered
+      const steps = fix.nativeElement.querySelectorAll('.ngx-dt-steps__step');
+      expect(steps).toHaveLength(2);
+      expect(steps[0].classList.contains('is-active')).toBe(true);
+      expect(steps[1].disabled).toBe(true); // can't jump to time without picking a date
+    });
+
+    it('picking a day auto-advances to the time step', () => {
+      const fix = TestBed.createComponent(HostWizard);
+      fix.detectChanges();
+      openPanel(fix);
+      const day = fix.nativeElement.querySelector(
+        'button.ngx-dt-calendar__day:not(.is-outside)',
+      ) as HTMLButtonElement;
+      day.click();
+      fix.detectChanges();
+      // Calendar gone, time visible
+      expect(fix.nativeElement.querySelector('ngx-datetime-calendar')).toBeNull();
+      expect(fix.nativeElement.querySelector('ngx-datetime-time')).toBeTruthy();
+      const steps = fix.nativeElement.querySelectorAll('.ngx-dt-steps__step');
+      expect(steps[1].classList.contains('is-active')).toBe(true);
+      expect(steps[0].classList.contains('is-done')).toBe(true);
+    });
+
+    it('Back button returns to the date step without losing the value', () => {
+      const fix = TestBed.createComponent(HostWizard);
+      fix.detectChanges();
+      openPanel(fix);
+      (fix.nativeElement.querySelector('button.ngx-dt-calendar__day:not(.is-outside)') as HTMLButtonElement).click();
+      fix.detectChanges();
+      const valueBefore = fix.componentInstance.value();
+      // Find footer "Back" button
+      const backBtn = Array.from(
+        fix.nativeElement.querySelectorAll('.ngx-dt-actions .ngx-dt-btn'),
+      ).find((b: any) => b.textContent.trim().includes('Back')) as HTMLButtonElement;
+      backBtn.click();
+      fix.detectChanges();
+      expect(fix.nativeElement.querySelector('ngx-datetime-calendar')).toBeTruthy();
+      expect(fix.nativeElement.querySelector('ngx-datetime-time')).toBeNull();
+      expect(fix.componentInstance.value()).toBe(valueBefore);
+    });
+
+    it('clicking step 1 in the stepper also goes back to the date step', () => {
+      const fix = TestBed.createComponent(HostWizard);
+      fix.detectChanges();
+      openPanel(fix);
+      (fix.nativeElement.querySelector('button.ngx-dt-calendar__day:not(.is-outside)') as HTMLButtonElement).click();
+      fix.detectChanges();
+      const dateStep = fix.nativeElement.querySelectorAll('.ngx-dt-steps__step')[0] as HTMLButtonElement;
+      dateStep.click();
+      fix.detectChanges();
+      expect(fix.nativeElement.querySelector('ngx-datetime-calendar')).toBeTruthy();
+    });
+
+    it('Next button on the date step advances when a value is set', () => {
+      const fix = TestBed.createComponent(HostWizard);
+      fix.componentInstance.value.set(new Date(2024, 5, 17, 14, 30));
+      fix.detectChanges();
+      openPanel(fix);
+      const nextBtn = Array.from(
+        fix.nativeElement.querySelectorAll('.ngx-dt-actions .ngx-dt-btn'),
+      ).find((b: any) => b.textContent.trim().includes('Next')) as HTMLButtonElement;
+      expect(nextBtn.disabled).toBe(false);
+      nextBtn.click();
+      fix.detectChanges();
+      expect(fix.nativeElement.querySelector('ngx-datetime-time')).toBeTruthy();
+    });
+
+    it('goToTime is a no-op when no value is set', () => {
+      const fix = TestBed.createComponent(HostWizard);
+      fix.detectChanges();
+      openPanel(fix);
+      const picker = fix.debugElement.query((el) => el.name === 'ngx-datetime-picker').componentInstance as NgxDatetimePicker;
+      picker.goToTime();
+      fix.detectChanges();
+      // Still on the date step because no value
+      expect(fix.nativeElement.querySelector('ngx-datetime-calendar')).toBeTruthy();
+    });
+
+    it('reopening the picker always starts on the date step', () => {
+      const fix = TestBed.createComponent(HostWizard);
+      fix.componentInstance.value.set(new Date(2024, 5, 17, 14, 30));
+      fix.detectChanges();
+      openPanel(fix);
+      // Advance to time
+      const nextBtn = Array.from(
+        fix.nativeElement.querySelectorAll('.ngx-dt-actions .ngx-dt-btn'),
+      ).find((b: any) => b.textContent.trim().includes('Next')) as HTMLButtonElement;
+      nextBtn.click();
+      fix.detectChanges();
+      // Close
+      pressEscape(fix);
+      // Reopen — should be back on the date step
+      openPanel(fix);
+      expect(fix.nativeElement.querySelector('ngx-datetime-calendar')).toBeTruthy();
+      expect(fix.nativeElement.querySelector('ngx-datetime-time')).toBeNull();
+    });
+  });
+
   describe('Signal Forms ([formField])', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({ imports: [HostSignalForms] });

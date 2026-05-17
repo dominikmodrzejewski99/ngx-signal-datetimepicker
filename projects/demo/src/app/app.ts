@@ -20,6 +20,7 @@ export class App {
   protected readonly themeSecondary = signal<Date | null>(null);
   protected readonly themeCustom = signal<Date | null>(null);
   protected readonly custom = signal<Date | null>(null);
+  protected readonly wizardValue = signal<Date | null>(null);
 
   protected readonly meeting = signal<MeetingModel>({ start: null });
   protected readonly meetingForm = form<MeetingModel>(this.meeting, (path) => {
@@ -169,4 +170,26 @@ export class App {
     await submit(this.fm, async () => undefined);
   }
 }`;
+
+  protected readonly codeWizard = `<ngx-datetime-picker
+  [(value)]="appointment"
+  [wizard]="true"
+  [hourCycle]="'h23'"
+  [minuteStep]="15"
+/>
+
+<!--
+  How it behaves:
+  - Panel opens on step 1 (calendar)
+  - Clicking a day auto-advances to step 2 (time)
+  - "Back" button (or the step-1 chip in the header) returns to the calendar
+    without losing the value
+  - "OK" confirms; "Clear" wipes the value back to null
+
+  Useful inputs:
+    [backLabel]      "Back"
+    [nextLabel]      "Next"
+    [dateStepLabel]  "Date"
+    [timeStepLabel]  "Time"
+-->`;
 }

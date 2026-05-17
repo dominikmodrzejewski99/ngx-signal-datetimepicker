@@ -198,6 +198,34 @@
     </details>
   </section>
 
+  <section class="demo">
+    <header class="demo__head">
+      <h2>6. Wizard mode — date first, then time</h2>
+      <p>
+        Flip <code>[wizard]="true"</code> to turn the panel into a
+        two-step flow: pick a date, then pick a time. After clicking a day
+        the panel auto-advances to step 2; a <strong>Back</strong> button (or
+        the step 1 chip in the header) returns to the calendar without
+        discarding the value. Useful when the picker lives in a tight space
+        or when you want a guided UX for less technical users.
+      </p>
+    </header>
+    <ngx-datetime-picker
+      [(value)]="wizardValue"
+      [wizard]="true"
+      [hourCycle]="'h23'"
+      [minuteStep]="15"
+      [locale]="'en-GB'"
+    />
+    @if (wizardValue()) {
+      <p class="hint">Picked: <code>{{ wizardValue()!.toISOString() }}</code></p>
+    }
+    <details class="demo__code">
+      <summary>Show code</summary>
+      <pre><code>{{ codeWizard }}</code></pre>
+    </details>
+  </section>
+
   <footer class="page__footer">
     <p>
       MIT licensed · WCAG 2.2 AAA out of the box ·

@@ -171,20 +171,54 @@ function currentTime(timeZone?: string | null): TimeValue {
             [ngTemplateOutletContext]="panelContext()"
           />
         }
-        <ngx-datetime-calendar
-          #calendar
-          [selected]="zonedSelected()"
-          [min]="zonedMin()"
-          [max]="zonedMax()"
-          [locale]="effectiveLocale()"
-          [weekStartsOn]="weekStartsOn()"
-          [ariaLabel]="'Date'"
-          (daySelect)="onDateSelect($event)"
-        />
-        @if (showTime()) {
-          <div class="ngx-dt-divider" role="separator"></div>
-          @if (!value()) {
-            <p class="ngx-dt-hint">{{ pickDateHint() }}</p>
+
+        @if (wizard() && showTime()) {
+          <nav class="ngx-dt-steps" aria-label="Picker steps">
+            <button
+              type="button"
+              class="ngx-dt-steps__step"
+              [class.is-active]="step() === 'date'"
+              [class.is-done]="step() === 'time'"
+              [attr.aria-current]="step() === 'date' ? 'step' : null"
+              (click)="goToDate()"
+            >
+              <span class="ngx-dt-steps__num">1</span>
+              <span>{{ dateStepLabel() }}</span>
+            </button>
+            <span class="ngx-dt-steps__sep" aria-hidden="true">›</span>
+            <button
+              type="button"
+              class="ngx-dt-steps__step"
+              [class.is-active]="step() === 'time'"
+              [attr.aria-current]="step() === 'time' ? 'step' : null"
+              [disabled]="!value()"
+              (click)="goToTime()"
+            >
+              <span class="ngx-dt-steps__num">2</span>
+              <span>{{ timeStepLabel() }}</span>
+            </button>
+          </nav>
+        }
+
+        @if (!wizard() || !showTime() || step() === 'date') {
+          <ngx-datetime-calendar
+            #calendar
+            [selected]="zonedSelected()"
+            [min]="zonedMin()"
+            [max]="zonedMax()"
+            [locale]="effectiveLocale()"
+            [weekStartsOn]="weekStartsOn()"
+            [ariaLabel]="'Date'"
+            (daySelect)="onDateSelect($event)"
+          />
+        }
+
+        @if (showTime() && (!wizard() || step() === 'time')) {
+          @if (!wizard()) {
+            <div class="ngx-dt-divider" role="separator"></div>
+            @if (!value()) {
+              <p class="ngx-dt-hint">{{ pickDateHint() }}</p>
+            }
           }
           <ngx-datetime-time
             [value]="timeValue()"
@@ -199,6 +233,7 @@ function currentTime(timeZone?: string | null): TimeValue {
             (valueChange)="onTimeChange($event)"
           />
         }
+
         @if (footerTpl(); as tpl) {
           <ng-container
             [ngTemplateOutlet]="tpl"
@@ -206,12 +241,20 @@ function currentTime(timeZone?: string | null): TimeValue {
           />
         } @else {
           <div class="ngx-dt-actions">
-            <button
-              type="button"
-              class="ngx-dt-btn ngx-dt-btn--ghost"
-              (click)="setNow()"
-              [disabled]="effectiveDisabled() || readonly()"
-            >{{ nowLabel() }}</button>
+            @if (wizard() && showTime() && step() === 'time') {
+              <button
+                type="button"
+                class="ngx-dt-btn ngx-dt-btn--ghost"
+                (click)="goToDate()"
+              >← {{ backLabel() }}</button>
+            } @else {
+              <button
+                type="button"
+                class="ngx-dt-btn ngx-dt-btn--ghost"
+                (click)="setNow()"
+                [disabled]="effectiveDisabled() || readonly()"
+              >{{ nowLabel() }}</button>
+            }
             <span class="ngx-dt-actions__spacer"></span>
             <button
               type="button"
@@ -219,12 +262,21 @@ function currentTime(timeZone?: string | null): TimeValue {
               (click)="clear()"
               [disabled]="effectiveDisabled() || readonly() || !value()"
             >{{ clearLabel() }}</button>
-            <button
-              type="button"
-              class="ngx-dt-btn ngx-dt-btn--primary"
-              (click)="confirm()"
-              [disabled]="effectiveDisabled() || readonly()"
-            >{{ confirmLabel() }}</button>
+            @if (wizard() && showTime() && step() === 'date') {
+              <button
+                type="button"
+                class="ngx-dt-btn ngx-dt-btn--primary"
+                (click)="goToTime()"
+                [disabled]="effectiveDisabled() || readonly() || !value()"
+              >{{ nextLabel() }} →</button>
+            } @else {
+              <button
+                type="button"
+                class="ngx-dt-btn ngx-dt-btn--primary"
+                (click)="confirm()"
+                [disabled]="effectiveDisabled() || readonly()"
+              >{{ confirmLabel() }}</button>
+            }
           </div>
         }
       </div>
@@ -286,6 +338,57 @@ function currentTime(timeZone?: string | null): TimeValue {
       min-width: calc(7 * var(--ngx-dt-target-size, 2.75rem) + 2rem);
     }
     .ngx-dt-divider { height: 1px; background: var(--ngx-dt-border, #6b7280); }
+
+    /* Wizard step indicator */
+    .ngx-dt-steps {
+      display: flex; align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--ngx-dt-border, #6b7280);
+    }
+    .ngx-dt-steps__step {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      flex: 1 1 auto;
+      padding: 0.5rem 0.625rem;
+      min-height: var(--ngx-dt-target-size, 2.75rem);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ngx-dt-muted, #374151);
+      border-radius: var(--ngx-dt-radius, 0.5rem);
+      cursor: pointer; font: inherit; font-weight: 500;
+      text-align: left;
+    }
+    .ngx-dt-steps__step:hover:not(:disabled) {
+      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
+    }
+    .ngx-dt-steps__step:focus-visible {
+      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
+      outline-offset: 2px;
+    }
+    .ngx-dt-steps__step:disabled { opacity: 0.45; cursor: not-allowed; }
+    .ngx-dt-steps__step.is-active {
+      color: var(--ngx-dt-fg, #111827);
+      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.04));
+    }
+    .ngx-dt-steps__step.is-active .ngx-dt-steps__num,
+    .ngx-dt-steps__step.is-done .ngx-dt-steps__num {
+      background: var(--ngx-dt-accent, #1d4ed8);
+      color: var(--ngx-dt-accent-fg, #fff);
+    }
+    .ngx-dt-steps__num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.5rem; height: 1.5rem;
+      flex: 0 0 auto;
+      border-radius: 9999px;
+      background: var(--ngx-dt-border, #6b7280);
+      color: var(--ngx-dt-input-bg, #fff);
+      font-size: 0.8125rem; font-weight: 700;
+    }
+    .ngx-dt-steps__sep {
+      color: var(--ngx-dt-muted, #374151);
+      font-size: 1rem;
+      flex: 0 0 auto;
+    }
     .ngx-dt-hint {
       margin: 0;
       font-size: 0.8125rem;
@@ -421,6 +524,23 @@ export class NgxDatetimePicker
   readonly suggestCurrentTime = input<boolean>(true);
 
   /**
+   * Step-by-step (wizard) flow: when `true`, the panel shows the calendar
+   * first; after a date is selected the panel switches to the time view and
+   * a "Back" button lets the user return to the calendar. When `false`
+   * (default) the calendar and time controls render side-by-side as before.
+   * Has no effect when `showTime` is `false`.
+   */
+  readonly wizard = input<boolean>(false);
+  /** Footer label for the "go back to the calendar" button in wizard mode. */
+  readonly backLabel = input<string>('Back');
+  /** Footer label for the "advance to the time step" button in wizard mode. */
+  readonly nextLabel = input<string>('Next');
+  /** Caption for the wizard date step (step 1). */
+  readonly dateStepLabel = input<string>('Date');
+  /** Caption for the wizard time step (step 2). */
+  readonly timeStepLabel = input<string>('Time');
+
+  /**
    * Optional floating label. When set, the trigger renders inside a Material-style
    * outlined field. The label sits over the input area and animates up to the
    * border when the picker is focused, opened, or has a value.
@@ -449,6 +569,8 @@ export class NgxDatetimePicker
   readonly footerTpl = contentChild<TemplateRef<NgxDatetimePanelContext>>('footerTpl');
 
   protected readonly isOpen = signal(false);
+  /** Current step in wizard mode. Ignored when `wizard()` is `false`. */
+  protected readonly step = signal<'date' | 'time'>('date');
   protected readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
   private readonly calendar = viewChild<NgxDatetimeCalendar>('calendar');
 
@@ -550,6 +672,8 @@ export class NgxDatetimePicker
     if (!this.value() && this.suggestCurrentTime()) {
       this.draftTime.set(currentTime(this.timeZone()));
     }
+    // Wizard always opens on the date step.
+    if (this.wizard()) this.step.set('date');
     this.isOpen.set(true);
     this.pendingPanelFocus.set(true);
   }
@@ -612,9 +736,27 @@ export class NgxDatetimePicker
     const facade = combineDateAndTime(date, t.hours, t.minutes, t.seconds);
     const next = tz ? fromZonedFacade(facade, tz) : facade;
     this.value.set(clampDate(next, this.minDate(), this.maxDate()));
+
+    // Wizard: a date pick advances to the time step.
+    if (this.wizard() && this.showTime()) {
+      this.step.set('time');
+      return;
+    }
+
     if (this.closeOnSelect() && !this.showTime()) {
       this.close();
     }
+  }
+
+  /** Wizard navigation — go back to the calendar step. */
+  goToDate(): void {
+    this.step.set('date');
+  }
+
+  /** Wizard navigation — move to the time step (no-op until a date is set). */
+  goToTime(): void {
+    if (!this.value()) return;
+    this.step.set('time');
   }
 
   protected onTimeChange(time: TimeValue): void {
