@@ -181,13 +181,22 @@ ngx-datetime-picker {
 - `triggerTpl` context: `{ value, display, open(), toggle(), disabled }`
 - `headerTpl` / `footerTpl` context: `{ value, close() }`
 
-## Accessibility
+## Accessibility (WCAG 2.1 AA)
 
-- The trigger is a `<button>` with `aria-haspopup="dialog"` and `aria-expanded`.
-- Panel is a `role="dialog"` with an `aria-label`.
-- Calendar grid uses `role="grid"` with weekday `columnheader`s and `gridcell` days; selected day exposes `aria-selected`.
-- Closing via Escape, click-outside, or the OK button marks the field as `touched`.
-- All interactive elements have `:focus-visible` outlines using `--ngx-dt-focus`.
+- **Roles & ARIA**: trigger is a `<button>` with `aria-haspopup="dialog"` and `aria-expanded`; the popup is `role="dialog"` with an `aria-label`; the calendar uses `role="grid"` with weekday `columnheader`s, `gridcell` days, `aria-selected`, `aria-disabled`, and live month/year announcements.
+- **Roving tabindex**: only one day (the focused one) is in the tab order; arrow keys move focus between cells without breaking the page's tab sequence.
+- **Keyboard map** (in the days grid):
+  - `ArrowLeft` / `ArrowRight` — previous / next day
+  - `ArrowUp` / `ArrowDown` — previous / next week
+  - `Home` / `End` — start / end of the current week
+  - `PageUp` / `PageDown` — previous / next month
+  - `Shift + PageUp` / `Shift + PageDown` — previous / next year
+  - `Enter` / `Space` — select the focused day
+  - `Escape` — close the panel and return focus to the trigger
+- **Month and year views** support the same pattern: arrows move, `Enter`/`Space` selects.
+- **Focus management**: opening the panel moves focus to the focused day; closing via `Escape` or the OK button returns focus to the trigger.
+- **Visible focus**: every interactive element has a `:focus-visible` outline using `--ngx-dt-focus`. Color tokens are CSS custom properties so themes can be picked to meet WCAG AA contrast (≥ 4.5:1 for normal text, ≥ 3:1 for large text and the focus ring).
+- **Reduced motion / no transitions**: the picker contains no animations, so it complies with `prefers-reduced-motion` out of the box.
 
 ## License
 
