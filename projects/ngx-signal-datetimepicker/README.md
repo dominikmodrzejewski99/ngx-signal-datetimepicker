@@ -78,6 +78,39 @@ export class App {
 }
 ```
 
+## With Reactive Forms
+
+The picker also implements `ControlValueAccessor`, so it drops in to any classic
+Reactive Forms control without changes:
+
+```ts
+import { Component } from '@angular/core';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgxDatetimePicker } from 'ngx-signal-datetimepicker';
+
+@Component({
+  selector: 'app-root',
+  imports: [NgxDatetimePicker, ReactiveFormsModule],
+  template: `
+    <ngx-datetime-picker
+      [formControl]="meeting"
+      [hourCycle]="'h23'"
+      [minuteStep]="15"
+    />
+    @if (meeting.touched && meeting.errors?.['required']) {
+      <p>Please pick a date and time.</p>
+    }
+  `,
+})
+export class App {
+  protected readonly meeting = new FormControl<Date | null>(null, Validators.required);
+}
+```
+
+The same component works with template-driven forms (`[(ngModel)]`),
+`setDisabledState()` from `disable()/enable()`, and emits `touched` when the
+panel closes.
+
 ## Inputs
 
 | Input             | Type                                   | Default                       | Description                                       |
