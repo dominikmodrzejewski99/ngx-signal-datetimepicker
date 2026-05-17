@@ -1,4 +1,5 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -132,6 +133,7 @@ function currentTime(): TimeValue {
           />
         }
         <ngx-datetime-calendar
+          #calendar
           [selected]="value()"
           [min]="minDate()"
           [max]="maxDate()"
@@ -359,6 +361,25 @@ export class NgxDatetimePicker
 
   protected readonly isOpen = signal(false);
   protected readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
+  private readonly calendar = viewChild<NgxDatetimeCalendar>('calendar');
+
+  /** Tracks whether the next render should move focus into the panel. */
+  private readonly pendingPanelFocus = signal(false);
+  /** Tracks whether the next render should move focus back to the trigger after close. */
+  private readonly pendingTriggerFocus = signal(false);
+
+  constructor() {
+    afterRenderEffect(() => {
+      if (this.pendingPanelFocus() && this.isOpen()) {
+        this.calendar()?.focusCurrent();
+        this.pendingPanelFocus.set(false);
+      }
+      if (this.pendingTriggerFocus() && !this.isOpen()) {
+        this.focus();
+        this.pendingTriggerFocus.set(false);
+      }
+    });
+  }
 
   /** Time used while value is null — lets the user fiddle with hours/minutes before picking a date. */
   private readonly draftTime = signal<TimeValue>({ hours: 0, minutes: 0, seconds: 0 });
@@ -399,13 +420,16 @@ export class NgxDatetimePicker
       this.draftTime.set(currentTime());
     }
     this.isOpen.set(true);
+    this.pendingPanelFocus.set(true);
   }
 
-  close(): void {
+  close(returnFocus = true): void {
     if (this.isOpen()) {
       this.isOpen.set(false);
       this.touched.set(true);
-      this.cvaOnTouched();
+      if (returnFocus) {
+        this.pendingTriggerFocus.set(true);
+      }
     }
   }
 
@@ -464,7 +488,8 @@ export class NgxDatetimePicker
     const target = event.target as Node | null;
     if (!target) return;
     if (!this.hostRef.nativeElement.contains(target)) {
-      this.close();
+      // Don't yank focus back to the trigger when the user clicked elsewhere intentionally.
+      this.close(false);
     }
   }
 
