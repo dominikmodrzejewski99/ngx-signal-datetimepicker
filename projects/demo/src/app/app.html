@@ -3,11 +3,27 @@
 <main class="page">
   <header class="page__hero">
     <h1>ngx-signal-datetimepicker</h1>
-    <p>One control. Date and time together. Built on Angular Signal Forms.</p>
+    <p class="page__tagline">
+      One control. Date and time together. Built on Angular Signal Forms.
+      Zero dependencies. WCAG 2.2 AAA.
+    </p>
+    <div class="page__cta">
+      <a class="cta cta--primary" href="https://www.npmjs.com/package/ngx-signal-datetimepicker">npm install ngx-signal-datetimepicker</a>
+      <a class="cta cta--ghost" href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker">View on GitHub</a>
+    </div>
   </header>
 
   <section class="demo">
-    <h2>1. Standalone (two-way bound to a signal)</h2>
+    <header class="demo__head">
+      <h2>1. Standalone — two-way bound to a signal</h2>
+      <p>
+        The simplest way to use the picker. Pass any
+        <code>WritableSignal&lt;Date | null&gt;</code> with <code>[(value)]</code>
+        and you've got a working date+time control. Below the picker we just
+        print the ISO string of the bound signal — it updates the moment you
+        pick.
+      </p>
+    </header>
     <ngx-datetime-picker
       [(value)]="basic"
       [hourCycle]="'h23'"
@@ -15,10 +31,23 @@
       [locale]="'en-GB'"
     />
     <pre>{{ basic()?.toISOString() ?? 'null' }}</pre>
+    <details class="demo__code">
+      <summary>Show code</summary>
+      <pre><code>{{ codeBasic }}</code></pre>
+    </details>
   </section>
 
   <section class="demo">
-    <h2>2. Themed via CSS custom properties</h2>
+    <header class="demo__head">
+      <h2>2. Themed via CSS custom properties</h2>
+      <p>
+        Same component, different look — driven entirely by CSS custom
+        properties (<code>--ngx-dt-accent</code>, <code>--ngx-dt-focus</code>,
+        <code>--ngx-dt-border</code>, …). Polish locale, 24h clock with
+        seconds, custom button labels — everything is an input. Override 2
+        variables and you have a brand-matched picker.
+      </p>
+    </header>
     <div class="themed">
       <ngx-datetime-picker
         [(value)]="themed"
@@ -31,51 +60,101 @@
         [confirmLabel]="'Zatwierdź'"
       />
     </div>
+    <details class="demo__code">
+      <summary>Show code</summary>
+      <pre><code>{{ codeThemed }}</code></pre>
+    </details>
   </section>
 
   <section class="demo">
-    <h2>3. Custom trigger &amp; footer templates</h2>
+    <header class="demo__head">
+      <h2>3. Custom trigger &amp; footer templates</h2>
+      <p>
+        Project named templates (<code>#triggerTpl</code>,
+        <code>#headerTpl</code>, <code>#footerTpl</code>) into the picker to
+        completely replace parts of its UI while keeping the open/close,
+        keyboard navigation, and Signal-Forms integration. The trigger below
+        is a custom pill button; the footer says "Done" instead of the default
+        Clear / OK row. Click the pin to see the panel.
+      </p>
+    </header>
     <ngx-datetime-picker
       [(value)]="custom"
       [locale]="'en-US'"
       [hourCycle]="'h12'"
       [closeOnSelect]="false"
     >
-      <ng-template #triggerTpl let-ctx>
-        <button type="button" class="custom-trigger" (click)="ctx.toggle()">
+      <ng-template #triggerTpl let-display="display" let-toggle="toggle" let-value="value">
+        <button type="button" class="custom-trigger" (click)="toggle()">
           <span aria-hidden="true">📌</span>
-          <span>{{ ctx.value ? ctx.display : 'Pick a moment' }}</span>
+          <span>{{ value ? display : 'Pick a moment' }}</span>
         </button>
       </ng-template>
-      <ng-template #footerTpl let-ctx>
+      <ng-template #footerTpl let-close="close">
         <div class="custom-footer">
           <small>You can render anything here.</small>
-          <button type="button" (click)="ctx.close()">Done</button>
+          <button type="button" (click)="close()">Done</button>
         </div>
       </ng-template>
     </ngx-datetime-picker>
+    @if (custom()) {
+      <p class="hint">Picked: <code>{{ custom()!.toISOString() }}</code></p>
+    }
+    <details class="demo__code">
+      <summary>Show code</summary>
+      <pre><code>{{ codeCustom }}</code></pre>
+    </details>
   </section>
 
   <section class="demo">
-    <h2>4. Reactive Forms (ControlValueAccessor)</h2>
+    <header class="demo__head">
+      <h2>4. Reactive Forms (<code>ControlValueAccessor</code>)</h2>
+      <p>
+        The picker implements <code>ControlValueAccessor</code>, so it drops
+        into classic <code>@angular/forms</code> exactly like a native input:
+        <code>[formControl]</code>, <code>formControlName</code>, or
+        <code>[(ngModel)]</code> all work. <code>disable()</code> /
+        <code>enable()</code> on the <code>FormControl</code> reach the picker
+        via <code>setDisabledState()</code>; closing the panel marks the
+        control as <code>touched</code>. Try the toggle below to see the
+        disabled state flow through.
+      </p>
+    </header>
     <ngx-datetime-picker
       [formControl]="reactiveControl"
       [hourCycle]="'h23'"
       [minuteStep]="5"
     />
-    <p>
-      Status:
-      <code>{{ reactiveControl.status }}</code>,
-      value:
-      <code>{{ reactiveControl.value?.toISOString() ?? 'null' }}</code>
+    <p class="state-row">
+      <span>Status: <code>{{ reactiveControl.status }}</code></span>
+      <span>Value: <code>{{ reactiveControl.value?.toISOString() ?? 'null' }}</code></span>
+      <span>Touched: <code>{{ reactiveControl.touched }}</code></span>
     </p>
     <button type="button" class="primary" (click)="toggleReactiveDisabled()">
       Toggle disabled
     </button>
+    <details class="demo__code">
+      <summary>Show code</summary>
+      <pre><code>{{ codeReactive }}</code></pre>
+    </details>
   </section>
 
   <section class="demo">
-    <h2>5. Signal Forms integration</h2>
+    <header class="demo__head">
+      <h2>5. Signal Forms integration (<code>[formField]</code>)</h2>
+      <p>
+        First-class binding to the new Signal Forms API. The picker satisfies
+        the <code>FormValueControl&lt;Date | null&gt;</code> contract, so the
+        <code>[formField]</code> directive wires the two-way value, the
+        validators (<code>required</code> below), and the
+        touched/dirty/invalid state — no <code>ControlValueAccessor</code>
+        boilerplate.
+      </p>
+      <p class="hint">
+        Pick a date below and submit. The form is invalid until a value is
+        set; once it's valid, you'll see the submitted timestamp.
+      </p>
+    </header>
     <form [formRoot]="meetingForm" (submit)="submitMeeting()">
       <label class="field-label">
         <span>Meeting start</span>
@@ -98,5 +177,18 @@
         <p class="state">{{ submitState() }}</p>
       }
     </form>
+    <details class="demo__code">
+      <summary>Show code</summary>
+      <pre><code>{{ codeSignalForms }}</code></pre>
+    </details>
   </section>
+
+  <footer class="page__footer">
+    <p>
+      MIT licensed · WCAG 2.2 AAA out of the box ·
+      <a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/blob/main/projects/ngx-signal-datetimepicker/README.md">Full API docs</a> ·
+      <a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/discussions">Discussions</a> ·
+      <a href="https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/issues/new/choose">Report an issue</a>
+    </p>
+  </footer>
 </main>
