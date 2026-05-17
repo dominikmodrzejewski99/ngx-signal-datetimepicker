@@ -302,18 +302,6 @@ export class NgxDatetimePicker
   private cvaOnChange: (value: Date | null) => void = () => undefined;
   private cvaOnTouched: () => void = () => undefined;
 
-  constructor() {
-    // Push internal value changes to the Reactive Forms control.
-    effect(() => {
-      const value = this.value();
-      if (this.cvaWriting) {
-        this.cvaWriting = false;
-        return;
-      }
-      this.cvaOnChange(value);
-    });
-  }
-
   // -- ControlValueAccessor ---------------------------------------------------
 
   writeValue(value: Date | null): void {
@@ -369,6 +357,17 @@ export class NgxDatetimePicker
   private readonly pendingTriggerFocus = signal(false);
 
   constructor() {
+    // Push internal value changes to the Reactive Forms control.
+    effect(() => {
+      const value = this.value();
+      if (this.cvaWriting) {
+        this.cvaWriting = false;
+        return;
+      }
+      this.cvaOnChange(value);
+    });
+
+    // Focus management for WCAG: move focus into the panel on open and back on close.
     afterRenderEffect(() => {
       if (this.pendingPanelFocus() && this.isOpen()) {
         this.calendar()?.focusCurrent();
@@ -427,6 +426,7 @@ export class NgxDatetimePicker
     if (this.isOpen()) {
       this.isOpen.set(false);
       this.touched.set(true);
+      this.cvaOnTouched();
       if (returnFocus) {
         this.pendingTriggerFocus.set(true);
       }
