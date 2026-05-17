@@ -1,0 +1,84 @@
+@let startField = meetingForm.start;
+
+<main class="page">
+  <header class="page__hero">
+    <h1>ngx-signal-datetimepicker</h1>
+    <p>One control. Date and time together. Built on Angular Signal Forms.</p>
+  </header>
+
+  <section class="demo">
+    <h2>1. Standalone (two-way bound to a signal)</h2>
+    <ngx-datetime-picker
+      [(value)]="basic"
+      [hourCycle]="'h23'"
+      [showSeconds]="false"
+      [locale]="'en-GB'"
+    />
+    <pre>{{ basic()?.toISOString() ?? 'null' }}</pre>
+  </section>
+
+  <section class="demo">
+    <h2>2. Themed via CSS custom properties</h2>
+    <div class="themed">
+      <ngx-datetime-picker
+        [(value)]="themed"
+        [locale]="'pl-PL'"
+        [weekStartsOn]="1"
+        [hourCycle]="'h23'"
+        [showSeconds]="true"
+        [placeholder]="'Wybierz datę i godzinę'"
+        [clearLabel]="'Wyczyść'"
+        [confirmLabel]="'Zatwierdź'"
+      />
+    </div>
+  </section>
+
+  <section class="demo">
+    <h2>3. Custom trigger &amp; footer templates</h2>
+    <ngx-datetime-picker
+      [(value)]="custom"
+      [locale]="'en-US'"
+      [hourCycle]="'h12'"
+      [closeOnSelect]="false"
+    >
+      <ng-template #triggerTpl let-ctx>
+        <button type="button" class="custom-trigger" (click)="ctx.toggle()">
+          <span aria-hidden="true">📌</span>
+          <span>{{ ctx.value ? ctx.display : 'Pick a moment' }}</span>
+        </button>
+      </ng-template>
+      <ng-template #footerTpl let-ctx>
+        <div class="custom-footer">
+          <small>You can render anything here.</small>
+          <button type="button" (click)="ctx.close()">Done</button>
+        </div>
+      </ng-template>
+    </ngx-datetime-picker>
+  </section>
+
+  <section class="demo">
+    <h2>4. Signal Forms integration</h2>
+    <form [formRoot]="meetingForm" (submit)="submitMeeting()">
+      <label class="field-label">
+        <span>Meeting start</span>
+        <ngx-datetime-picker
+          [formField]="startField"
+          [locale]="'en-GB'"
+          [hourCycle]="'h23'"
+          [minuteStep]="15"
+        />
+      </label>
+      @if (startField().touched() && startField().errors().length) {
+        <p class="error">
+          @for (err of startField().errors(); track err) {
+            <span>{{ err.message ?? err.kind }}</span>
+          }
+        </p>
+      }
+      <button type="submit" class="primary">Submit</button>
+      @if (submitState()) {
+        <p class="state">{{ submitState() }}</p>
+      }
+    </form>
+  </section>
+</main>

@@ -1,0 +1,99 @@
+:host { display: block; font-family: system-ui, sans-serif; }
+
+.page {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #111827;
+}
+.page__hero { text-align: center; margin-bottom: 2rem; }
+.page__hero h1 { margin: 0 0 0.25rem; }
+.page__hero p { margin: 0; color: #6b7280; }
+
+.demo {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.demo h2 { margin-top: 0; font-size: 1rem; color: #374151; }
+
+pre {
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.themed ngx-datetime-picker {
+  --ngx-dt-accent: #ec4899;
+  --ngx-dt-accent-fg: #ffffff;
+  --ngx-dt-radius: 0.75rem;
+  --ngx-dt-radius-lg: 1rem;
+  --ngx-dt-focus: #ec4899;
+  --ngx-dt-border: #fbcfe8;
+  --ngx-dt-panel-bg: #fff7fb;
+  --ngx-dt-shadow: 0 12px 30px rgba(236, 72, 153, 0.18);
+}
+
+.custom-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  font: inherit;
+}
+.custom-trigger:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+
+.custom-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e5e7eb;
+}
+.custom-footer small { color: #6b7280; }
+.custom-footer button {
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+}
+
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+.error {
+  color: #b91c1c;
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.85rem;
+}
+.state {
+  margin-top: 0.75rem;
+  color: #047857;
+  font-size: 0.9rem;
+}
+button.primary {
+  padding: 0.5rem 0.875rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+button.primary:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
