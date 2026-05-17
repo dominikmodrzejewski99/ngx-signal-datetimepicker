@@ -176,7 +176,7 @@ function currentTime(timeZone?: string | null): TimeValue {
           [selected]="zonedSelected()"
           [min]="zonedMin()"
           [max]="zonedMax()"
-          [locale]="locale()"
+          [locale]="effectiveLocale()"
           [weekStartsOn]="weekStartsOn()"
           [ariaLabel]="'Date'"
           (daySelect)="onDateSelect($event)"
@@ -519,7 +519,7 @@ export class NgxDatetimePicker
     const tz = this.timeZone();
     const base = userFmt ?? defaultDisplayFormat(this.showSeconds(), this.hourCycle());
     const fmt: Intl.DateTimeFormatOptions = tz ? { ...base, timeZone: tz } : base;
-    return formatDateTime(v, this.locale(), fmt);
+    return formatDateTime(v, this.effectiveLocale(), fmt);
   });
 
   protected readonly triggerContext = computed<NgxDatetimeTriggerContext>(() => ({
