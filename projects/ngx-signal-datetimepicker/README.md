@@ -8,6 +8,10 @@
 [![WCAG 2.2 AAA](https://img.shields.io/badge/WCAG-2.2%20AAA-brightgreen)](#accessibility-wcag-22-aaa)
 [![Angular 21+](https://img.shields.io/badge/angular-%E2%89%A521-dd0031?logo=angular)](https://angular.dev)
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/dominikmodrzejewski99/ngx-signal-datetimepicker/main/assets/demo.gif" alt="ngx-signal-datetimepicker demo — open picker, pick a date, pick a time" width="720" />
+</p>
+
 A small, themeable Angular **datetime picker** that combines date and time selection into a **single control**, built on top of [Angular Signal Forms](https://angular.dev/guide/forms/signals).
 
 > The Angular ecosystem doesn't have a small, framework-native datetime picker that exposes one combined `Date | null` value, plugs into the new Signal Forms API, and ships zero runtime dependencies. This fills that gap.

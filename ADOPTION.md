@@ -17,9 +17,9 @@ skimming. Tick all of these first:
       wiring)*
 - [x] **Vercel preview URL** for the demo app — https://ngx-signal-datetimepicker.vercel.app
 - [x] **StackBlitz starter** — linked from README "Try it now" line
-- [ ] An animated **GIF or short MP4** of the picker in action embedded
-      near the top of the README (Recordit / Kap; ≤ 1 MB) — **biggest
-      remaining blocker for launch**
+- [x] An animated **GIF or short MP4** of the picker in action embedded
+      near the top of the README — `assets/demo.gif` (453 KB) and
+      `assets/demo.mp4` (381 KB)
 - [x] CHANGELOG entry that describes 0.1.0
 - [x] Open the first **GitHub Discussion** thread titled "Roadmap & ideas
       for v0.2" — [discussions/9](https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/discussions/9)
