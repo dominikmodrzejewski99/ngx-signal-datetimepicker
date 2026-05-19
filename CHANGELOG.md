@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-19
+
+### Documentation
+- Add animated demo GIF (and MP4 alternative) to the README so the picker's value is visible at a glance on npm and GitHub.
+
+## [0.1.0] — 2026-05-17
+
+Initial release.
+
 ### Added
 - Angular `LOCALE_ID` integration: when `locale` input is omitted, the picker uses the injected locale.
 - IANA `timeZone` input: calendar and time inputs interpret the bound `Date` as wall time in that zone; the model stays a UTC `Date`.
@@ -18,7 +27,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default color tokens now meet WCAG AAA 7:1 contrast on white surfaces.
 - Default `--ngx-dt-target-size` is 2.75 rem (44 CSS px) for AAA target-size conformance.
 - `:focus-visible` outline is 3 px (`--ngx-dt-focus-width`).
-
-## [0.1.0] — TBD
-
-Initial release.
