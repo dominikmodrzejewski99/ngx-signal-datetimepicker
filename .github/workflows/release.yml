@@ -23,6 +23,9 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: npm
 
+      - name: Upgrade npm (Trusted Publishing requires >= 11.5.1)
+        run: npm install -g npm@latest
+
       - name: Install
         run: npm ci
 
@@ -32,11 +35,9 @@ jobs:
       - name: Test (with coverage gate)
         run: npm test
 
-      - name: Publish to npm (with provenance)
+      - name: Publish to npm (Trusted Publishing + provenance)
         run: npm publish --provenance --access public
         working-directory: dist/ngx-signal-datetimepicker
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
