@@ -5,6 +5,10 @@
 [![npm](https://img.shields.io/npm/v/ngx-signal-datetimepicker.svg)](https://www.npmjs.com/package/ngx-signal-datetimepicker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
+<p align="center">
+  <img src="./assets/demo.gif" alt="ngx-signal-datetimepicker demo — open picker, pick a date, pick a time" width="720" />
+</p>
+
 This is an Angular workspace that contains:
 
 - `projects/ngx-signal-datetimepicker` — the publishable library
