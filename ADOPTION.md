@@ -9,20 +9,20 @@ sequence** over ~2 weeks, then keep the **steady-state** loop going.
 Before you announce anything, the repo has to feel solid in 30 seconds of
 skimming. Tick all of these first:
 
-- [ ] `0.1.0` published to npm, package name claimed
-- [ ] Repo public on GitHub with **About** filled in (description + URL +
+- [x] `0.1.0` published to npm, package name claimed
+- [x] Repo public on GitHub with **About** filled in (description + URL +
       topics: `angular`, `angular21`, `signal-forms`, `datepicker`,
       `timepicker`, `datetimepicker`, `accessibility`, `wcag`, `a11y`)
-- [ ] CI green on `main`; coverage badge visible
-- [ ] **Vercel preview URL** for the demo app (one-click deploy via this
-      repo's `vercel.json`; set the Vercel project to deploy `main`)
-- [ ] **StackBlitz starter** — open the demo from GitHub once, save it,
-      then put that URL in the README badge and "Try it now" line
+- [x] CI green on `main` *(coverage badge still TODO — needs codecov/coveralls
+      wiring)*
+- [x] **Vercel preview URL** for the demo app — https://ngx-signal-datetimepicker.vercel.app
+- [x] **StackBlitz starter** — linked from README "Try it now" line
 - [ ] An animated **GIF or short MP4** of the picker in action embedded
-      near the top of the README (Recordit / Kap; ≤ 1 MB)
-- [ ] CHANGELOG entry that describes 0.1.0
-- [ ] Open the first **GitHub Discussion** thread titled "Roadmap & ideas
-      for v0.2" so visitors land somewhere alive
+      near the top of the README (Recordit / Kap; ≤ 1 MB) — **biggest
+      remaining blocker for launch**
+- [x] CHANGELOG entry that describes 0.1.0
+- [x] Open the first **GitHub Discussion** thread titled "Roadmap & ideas
+      for v0.2" — [discussions/9](https://github.com/dominikmodrzejewski99/ngx-signal-datetimepicker/discussions/9)
 
 ## 1. Launch sequence (week 1)
 
