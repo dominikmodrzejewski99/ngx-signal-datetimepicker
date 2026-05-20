@@ -1,6 +1,6 @@
 {
   "name": "ngx-signal-datetimepicker",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Headless, themeable Angular datetime picker (date + time in one control) built on Signal Forms.",
   "keywords": [
     "angular",
