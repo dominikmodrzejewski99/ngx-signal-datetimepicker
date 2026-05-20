@@ -1,0 +1,129 @@
+<div class="ngx-dt-calendar" role="group" [attr.aria-label]="ariaLabel()">
+  <header class="ngx-dt-calendar__header">
+    @if (view() === 'days') {
+      <button
+        type="button"
+        class="ngx-dt-calendar__nav"
+        aria-label="Previous month"
+        (click)="navigate(-1)"
+      >‹</button>
+      <button
+        type="button"
+        class="ngx-dt-calendar__title"
+        (click)="setView('months')"
+        [attr.aria-label]="'Switch to month selection. Currently ' + monthLabel()"
+      >{{ monthLabel() }}</button>
+      <button
+        type="button"
+        class="ngx-dt-calendar__nav"
+        aria-label="Next month"
+        (click)="navigate(1)"
+      >›</button>
+    } @else if (view() === 'months') {
+      <button
+        type="button"
+        class="ngx-dt-calendar__nav"
+        aria-label="Previous year"
+        (click)="navigateYear(-1)"
+      >‹</button>
+      <button
+        type="button"
+        class="ngx-dt-calendar__title"
+        (click)="setView('years')"
+        [attr.aria-label]="'Switch to year selection. Currently ' + yearLabel()"
+      >{{ yearLabel() }}</button>
+      <button
+        type="button"
+        class="ngx-dt-calendar__nav"
+        aria-label="Next year"
+        (click)="navigateYear(1)"
+      >›</button>
+    } @else {
+      <button
+        type="button"
+        class="ngx-dt-calendar__nav"
+        aria-label="Previous decade"
+        (click)="navigateDecade(-1)"
+      >‹</button>
+      <button
+        type="button"
+        class="ngx-dt-calendar__title"
+        (click)="setView('days')"
+        aria-label="Close year selection"
+      >{{ yearsRangeLabel() }}</button>
+      <button
+        type="button"
+        class="ngx-dt-calendar__nav"
+        aria-label="Next decade"
+        (click)="navigateDecade(1)"
+      >›</button>
+    }
+  </header>
+
+  @if (view() === 'days') {
+    <div class="ngx-dt-calendar__weekdays" role="row">
+      @for (label of weekdayLabels(); track label) {
+        <span class="ngx-dt-calendar__weekday" role="columnheader">{{ label }}</span>
+      }
+    </div>
+
+    <div #grid class="ngx-dt-calendar__grid" role="grid">
+      @for (day of days(); track day.key) {
+        <button
+          type="button"
+          role="gridcell"
+          class="ngx-dt-calendar__day"
+          [class.is-outside]="!day.inCurrentMonth"
+          [class.is-today]="day.isToday"
+          [class.is-selected]="day.isSelected"
+          [class.is-disabled]="day.isDisabled"
+          [class.is-focused]="day.isFocused"
+          [attr.aria-selected]="day.isSelected"
+          [attr.aria-disabled]="day.isDisabled"
+          [attr.data-day]="day.iso"
+          [disabled]="day.isDisabled"
+          [attr.tabindex]="day.isFocused ? 0 : -1"
+          (click)="select(day)"
+          (focus)="focusedDate.set(day.date)"
+        >
+          {{ day.date.getDate() }}
+        </button>
+      }
+    </div>
+  } @else if (view() === 'months') {
+    <div class="ngx-dt-calendar__months" role="grid">
+      @for (m of months(); track m.index) {
+        <button
+          type="button"
+          role="gridcell"
+          class="ngx-dt-calendar__cell"
+          [class.is-selected]="m.isSelected"
+          [class.is-today]="m.isCurrent"
+          [class.is-focused]="m.isFocused"
+          [attr.aria-pressed]="m.isSelected"
+          [attr.tabindex]="m.isFocused ? 0 : -1"
+          (click)="pickMonth(m.index)"
+          (focus)="focusedMonth.set(m.index)"
+        >{{ m.label }}</button>
+      }
+    </div>
+  } @else {
+    <div class="ngx-dt-calendar__years" role="grid">
+      @for (y of years(); track y.value) {
+        <button
+          type="button"
+          role="gridcell"
+          class="ngx-dt-calendar__cell"
+          [class.is-selected]="y.isSelected"
+          [class.is-today]="y.isCurrent"
+          [class.is-focused]="y.isFocused"
+          [class.is-outside]="y.outOfRange"
+          [attr.aria-pressed]="y.isSelected"
+          [attr.tabindex]="y.isFocused ? 0 : -1"
+          (click)="pickYear(y.value)"
+          (focus)="focusedYear.set(y.value)"
+        >{{ y.value }}</button>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,132 @@
+<div class="ngx-dt-time" role="group" [attr.aria-label]="ariaLabel()">
+  <div class="ngx-dt-time__main">
+    <div class="ngx-dt-time__field" (wheel)="onWheel($event, 'h')">
+      <button
+        type="button"
+        class="ngx-dt-time__step"
+        (click)="step('h', 1)"
+        aria-label="Increase hours"
+        [disabled]="disabled() || readonly()"
+      >▲</button>
+      <input
+        class="ngx-dt-time__input"
+        type="text"
+        inputmode="numeric"
+        maxlength="2"
+        aria-label="Hours"
+        [value]="displayHour()"
+        (input)="onHourInput($event)"
+        (focus)="selectAll($event)"
+        (blur)="onBlurHour($event)"
+        [disabled]="disabled()"
+        [readOnly]="readonly()"
+      />
+      <button
+        type="button"
+        class="ngx-dt-time__step"
+        (click)="step('h', -1)"
+        aria-label="Decrease hours"
+        [disabled]="disabled() || readonly()"
+      >▼</button>
+    </div>
+
+    <span class="ngx-dt-time__sep" aria-hidden="true">:</span>
+
+    <div class="ngx-dt-time__field" (wheel)="onWheel($event, 'm')">
+      <button
+        type="button"
+        class="ngx-dt-time__step"
+        (click)="step('m', minuteStep())"
+        aria-label="Increase minutes"
+        [disabled]="disabled() || readonly()"
+      >▲</button>
+      <input
+        class="ngx-dt-time__input"
+        type="text"
+        inputmode="numeric"
+        maxlength="2"
+        aria-label="Minutes"
+        [value]="paddedMinutes()"
+        (input)="onMinuteInput($event)"
+        (focus)="selectAll($event)"
+        (blur)="onBlurMinute($event)"
+        [disabled]="disabled()"
+        [readOnly]="readonly()"
+      />
+      <button
+        type="button"
+        class="ngx-dt-time__step"
+        (click)="step('m', -minuteStep())"
+        aria-label="Decrease minutes"
+        [disabled]="disabled() || readonly()"
+      >▼</button>
+    </div>
+
+    @if (showSeconds()) {
+      <span class="ngx-dt-time__sep" aria-hidden="true">:</span>
+      <div class="ngx-dt-time__field" (wheel)="onWheel($event, 's')">
+        <button
+          type="button"
+          class="ngx-dt-time__step"
+          (click)="step('s', secondStep())"
+          aria-label="Increase seconds"
+          [disabled]="disabled() || readonly()"
+        >▲</button>
+        <input
+          class="ngx-dt-time__input"
+          type="text"
+          inputmode="numeric"
+          maxlength="2"
+          aria-label="Seconds"
+          [value]="paddedSeconds()"
+          (input)="onSecondInput($event)"
+          (focus)="selectAll($event)"
+          (blur)="onBlurSecond($event)"
+          [disabled]="disabled()"
+          [readOnly]="readonly()"
+        />
+        <button
+          type="button"
+          class="ngx-dt-time__step"
+          (click)="step('s', -secondStep())"
+          aria-label="Decrease seconds"
+          [disabled]="disabled() || readonly()"
+        >▼</button>
+      </div>
+    }
+
+    @if (hourCycle() === 'h12') {
+      <div class="ngx-dt-time__period" role="group" aria-label="AM or PM">
+        <button
+          type="button"
+          class="ngx-dt-time__period-btn"
+          [class.is-active]="period() === 'AM'"
+          [attr.aria-pressed]="period() === 'AM'"
+          (click)="setPeriod('AM')"
+          [disabled]="disabled() || readonly()"
+        >AM</button>
+        <button
+          type="button"
+          class="ngx-dt-time__period-btn"
+          [class.is-active]="period() === 'PM'"
+          [attr.aria-pressed]="period() === 'PM'"
+          (click)="setPeriod('PM')"
+          [disabled]="disabled() || readonly()"
+        >PM</button>
+      </div>
+    }
+  </div>
+
+  @if (presets().length) {
+    <div class="ngx-dt-time__presets" role="group" aria-label="Quick presets">
+      @for (preset of presets(); track preset.label) {
+        <button
+          type="button"
+          class="ngx-dt-time__preset"
+          (click)="applyPreset(preset)"
+          [disabled]="disabled() || readonly()"
+        >{{ preset.label }}</button>
+      }
+    </div>
+  }
+</div>

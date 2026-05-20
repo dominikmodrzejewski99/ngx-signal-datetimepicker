@@ -3,9 +3,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   input,
+  linkedSignal,
   output,
   signal,
   viewChild,
@@ -23,250 +23,24 @@ import {
 
 type View = 'days' | 'months' | 'years';
 
+interface EnrichedDay extends CalendarDay {
+  /** Stable @for track key. */
+  key: number;
+  /** ISO timestamp, exposed via data-day for debugging / e2e selectors. */
+  iso: string;
+  isSelected: boolean;
+  isDisabled: boolean;
+  isFocused: boolean;
+}
+
 @Component({
   selector: 'ngx-datetime-calendar',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './calendar.component.html',
+  styleUrl: './calendar.component.scss',
   host: {
     '(keydown)': 'onKeydown($event)',
   },
-  template: `
-    <div class="ngx-dt-calendar" role="group" [attr.aria-label]="ariaLabel()">
-      <header class="ngx-dt-calendar__header">
-        @if (view() === 'days') {
-          <button
-            type="button"
-            class="ngx-dt-calendar__nav"
-            aria-label="Previous month"
-            (click)="navigate(-1)"
-          >‹</button>
-          <button
-            type="button"
-            class="ngx-dt-calendar__title"
-            (click)="setView('months')"
-            [attr.aria-label]="'Switch to month selection. Currently ' + monthLabel()"
-          >{{ monthLabel() }}</button>
-          <button
-            type="button"
-            class="ngx-dt-calendar__nav"
-            aria-label="Next month"
-            (click)="navigate(1)"
-          >›</button>
-        } @else if (view() === 'months') {
-          <button
-            type="button"
-            class="ngx-dt-calendar__nav"
-            aria-label="Previous year"
-            (click)="navigateYear(-1)"
-          >‹</button>
-          <button
-            type="button"
-            class="ngx-dt-calendar__title"
-            (click)="setView('years')"
-            [attr.aria-label]="'Switch to year selection. Currently ' + yearLabel()"
-          >{{ yearLabel() }}</button>
-          <button
-            type="button"
-            class="ngx-dt-calendar__nav"
-            aria-label="Next year"
-            (click)="navigateYear(1)"
-          >›</button>
-        } @else {
-          <button
-            type="button"
-            class="ngx-dt-calendar__nav"
-            aria-label="Previous decade"
-            (click)="navigateDecade(-1)"
-          >‹</button>
-          <button
-            type="button"
-            class="ngx-dt-calendar__title"
-            (click)="setView('days')"
-            aria-label="Close year selection"
-          >{{ yearsRangeLabel() }}</button>
-          <button
-            type="button"
-            class="ngx-dt-calendar__nav"
-            aria-label="Next decade"
-            (click)="navigateDecade(1)"
-          >›</button>
-        }
-      </header>
-
-      @if (view() === 'days') {
-        <div class="ngx-dt-calendar__weekdays" role="row">
-          @for (label of weekdayLabels(); track label) {
-            <span class="ngx-dt-calendar__weekday" role="columnheader">{{ label }}</span>
-          }
-        </div>
-
-        <div #grid class="ngx-dt-calendar__grid" role="grid">
-          @for (day of days(); track day.date.getTime()) {
-            <button
-              type="button"
-              role="gridcell"
-              class="ngx-dt-calendar__day"
-              [class.is-outside]="!day.inCurrentMonth"
-              [class.is-today]="day.isToday"
-              [class.is-selected]="isSelected(day)"
-              [class.is-disabled]="isDisabled(day)"
-              [class.is-focused]="isFocused(day)"
-              [attr.aria-selected]="isSelected(day)"
-              [attr.aria-disabled]="isDisabled(day)"
-              [attr.data-day]="day.date.toISOString()"
-              [disabled]="isDisabled(day)"
-              [attr.tabindex]="isFocused(day) ? 0 : -1"
-              (click)="select(day)"
-              (focus)="focusedDate.set(day.date)"
-            >
-              {{ day.date.getDate() }}
-            </button>
-          }
-        </div>
-      } @else if (view() === 'months') {
-        <div class="ngx-dt-calendar__months" role="grid">
-          @for (m of months(); track m.index) {
-            <button
-              type="button"
-              role="gridcell"
-              class="ngx-dt-calendar__cell"
-              [class.is-selected]="m.isSelected"
-              [class.is-today]="m.isCurrent"
-              [class.is-focused]="m.isFocused"
-              [attr.aria-pressed]="m.isSelected"
-              [attr.tabindex]="m.isFocused ? 0 : -1"
-              (click)="pickMonth(m.index)"
-              (focus)="focusedMonth.set(m.index)"
-            >{{ m.label }}</button>
-          }
-        </div>
-      } @else {
-        <div class="ngx-dt-calendar__years" role="grid">
-          @for (y of years(); track y.value) {
-            <button
-              type="button"
-              role="gridcell"
-              class="ngx-dt-calendar__cell"
-              [class.is-selected]="y.isSelected"
-              [class.is-today]="y.isCurrent"
-              [class.is-focused]="y.isFocused"
-              [class.is-outside]="y.outOfRange"
-              [attr.aria-pressed]="y.isSelected"
-              [attr.tabindex]="y.isFocused ? 0 : -1"
-              (click)="pickYear(y.value)"
-              (focus)="focusedYear.set(y.value)"
-            >{{ y.value }}</button>
-          }
-        </div>
-      }
-    </div>
-  `,
-  styles: [`
-    :host { display: block; }
-    .ngx-dt-calendar {
-      display: flex; flex-direction: column;
-      gap: var(--ngx-dt-gap, 0.375rem);
-    }
-    .ngx-dt-calendar__header {
-      display: flex; align-items: center; gap: 0.25rem;
-    }
-    .ngx-dt-calendar__title {
-      flex: 1; text-align: center; font-weight: 600;
-      background: transparent; border: 1px solid transparent;
-      color: var(--ngx-dt-fg, #111827);
-      padding: 0.5rem 0.75rem;
-      min-height: var(--ngx-dt-target-size, 2.75rem);
-      border-radius: var(--ngx-dt-radius, 0.5rem);
-      cursor: pointer; font: inherit; font-weight: 600;
-    }
-    .ngx-dt-calendar__title:hover { background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06)); }
-    .ngx-dt-calendar__title:focus-visible {
-      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
-      outline-offset: 2px;
-    }
-    .ngx-dt-calendar__nav {
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--ngx-dt-fg, #111827);
-      width: var(--ngx-dt-target-size, 2.75rem);
-      height: var(--ngx-dt-target-size, 2.75rem);
-      border-radius: var(--ngx-dt-radius, 0.5rem);
-      cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.25rem; line-height: 1;
-    }
-    .ngx-dt-calendar__nav:hover { background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06)); }
-    .ngx-dt-calendar__nav:focus-visible {
-      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
-      outline-offset: 2px;
-    }
-
-    .ngx-dt-calendar__weekdays,
-    .ngx-dt-calendar__grid {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(var(--ngx-dt-target-size, 2.75rem), 1fr));
-      gap: 2px;
-    }
-    .ngx-dt-calendar__weekday {
-      text-align: center;
-      font-size: 0.8125rem;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      color: var(--ngx-dt-muted, #374151);
-      padding: 0.25rem 0;
-    }
-    .ngx-dt-calendar__day,
-    .ngx-dt-calendar__cell {
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--ngx-dt-fg, #111827);
-      border-radius: var(--ngx-dt-radius, 0.5rem);
-      cursor: pointer; font: inherit;
-    }
-    .ngx-dt-calendar__day {
-      min-width: var(--ngx-dt-target-size, 2.75rem);
-      min-height: var(--ngx-dt-target-size, 2.75rem);
-      display: inline-flex; align-items: center; justify-content: center;
-    }
-    .ngx-dt-calendar__day:hover:not(:disabled),
-    .ngx-dt-calendar__cell:hover:not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
-    }
-    .ngx-dt-calendar__day:focus-visible,
-    .ngx-dt-calendar__cell:focus-visible {
-      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
-      outline-offset: 1px;
-    }
-    .ngx-dt-calendar__day.is-outside,
-    .ngx-dt-calendar__cell.is-outside { color: var(--ngx-dt-muted, #374151); opacity: 0.7; }
-    .ngx-dt-calendar__day.is-today,
-    .ngx-dt-calendar__cell.is-today {
-      font-weight: 700;
-      box-shadow: inset 0 0 0 2px var(--ngx-dt-focus, #1d4ed8);
-    }
-    .ngx-dt-calendar__day.is-selected,
-    .ngx-dt-calendar__cell.is-selected {
-      background: var(--ngx-dt-accent, #1d4ed8);
-      color: var(--ngx-dt-accent-fg, #fff);
-    }
-    .ngx-dt-calendar__day.is-disabled,
-    .ngx-dt-calendar__day:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .ngx-dt-calendar__months {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(var(--ngx-dt-target-size, 2.75rem), 1fr));
-      gap: 4px;
-    }
-    .ngx-dt-calendar__years {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(var(--ngx-dt-target-size, 2.75rem), 1fr));
-      gap: 4px;
-    }
-    .ngx-dt-calendar__cell {
-      padding: 0.75rem 0.25rem;
-      min-height: var(--ngx-dt-target-size, 2.75rem);
-      text-align: center;
-    }
-  `],
 })
 export class NgxDatetimeCalendar {
   readonly selected = input<Date | null>(null);
@@ -280,19 +54,28 @@ export class NgxDatetimeCalendar {
 
   readonly daySelect = output<Date>();
 
-  private readonly visibleMonth = signal<Date>(startOfMonth(this.selected() ?? new Date()));
+  /**
+   * The month currently being rendered. Derived from `selected`, but writable —
+   * user navigation (prev / next, year picker, keyboard) persists until the
+   * source signal actually changes.
+   */
+  private readonly visibleMonth = linkedSignal<Date | null, Date>({
+    source: () => this.selected(),
+    computation: (sel, prev) =>
+      sel ? startOfMonth(sel) : (prev?.value ?? startOfMonth(new Date())),
+  });
+
   protected readonly view = signal<View>('days');
   private readonly gridEl = viewChild<ElementRef<HTMLElement>>('grid');
 
-  /** Roving tabindex anchor for days. */
-  protected readonly focusedDate = signal<Date>(
-    this.selected() ?? new Date(),
-  );
-  /** Roving tabindex anchor for months view. */
+  /** Roving tabindex anchor for the days grid. */
+  protected readonly focusedDate = linkedSignal<Date | null, Date>({
+    source: () => this.selected(),
+    computation: (sel, prev) => sel ?? prev?.value ?? new Date(),
+  });
   protected readonly focusedMonth = signal<number>(
     (this.selected() ?? new Date()).getMonth(),
   );
-  /** Roving tabindex anchor for years view. */
   protected readonly focusedYear = signal<number>(
     (this.selected() ?? new Date()).getFullYear(),
   );
@@ -304,9 +87,45 @@ export class NgxDatetimeCalendar {
     getWeekdayLabels(this.locale(), this.weekStartsOn()),
   );
 
-  protected readonly days = computed<CalendarDay[]>(() =>
-    buildCalendarGrid(this.visibleMonth(), this.weekStartsOn()),
-  );
+  /**
+   * min/max projected to whole-day boundaries, with infinity sentinels when
+   * unset. Lets {@link days} and {@link isDateDisabled} stay a single comparison.
+   */
+  private readonly minDayMs = computed<number>(() => {
+    const m = this.min();
+    return m
+      ? new Date(m.getFullYear(), m.getMonth(), m.getDate()).getTime()
+      : Number.NEGATIVE_INFINITY;
+  });
+  private readonly maxDayMs = computed<number>(() => {
+    const m = this.max();
+    return m
+      ? new Date(m.getFullYear(), m.getMonth(), m.getDate(), 23, 59, 59, 999).getTime()
+      : Number.POSITIVE_INFINITY;
+  });
+
+  /**
+   * Calendar grid with all per-cell flags pre-computed. Keeps the template free
+   * of function calls — read once per change-detection pass.
+   */
+  protected readonly days = computed<EnrichedDay[]>(() => {
+    const grid = buildCalendarGrid(this.visibleMonth(), this.weekStartsOn());
+    const sel = this.selected();
+    const focus = this.focusedDate();
+    const minMs = this.minDayMs();
+    const maxMs = this.maxDayMs();
+    return grid.map((d) => {
+      const t = d.date.getTime();
+      return {
+        ...d,
+        key: t,
+        iso: d.date.toISOString(),
+        isSelected: sameDay(d.date, sel),
+        isFocused: sameDay(d.date, focus),
+        isDisabled: t < minMs || t > maxMs,
+      };
+    });
+  });
 
   protected readonly monthLabel = computed(() =>
     new Intl.DateTimeFormat(this.locale(), { month: 'long', year: 'numeric' }).format(
@@ -355,49 +174,27 @@ export class NgxDatetimeCalendar {
   });
 
   constructor() {
-    // Keep the visible month in sync when the selected value changes externally.
-    effect(() => {
-      const sel = this.selected();
-      if (sel) {
-        this.visibleMonth.set(startOfMonth(sel));
-        this.focusedDate.set(sel);
-      }
-    });
-
-    // After render, if a focus was requested, move focus to the day with [tabindex=0].
     afterRenderEffect(() => {
       if (!this.focusRequested()) return;
       const grid = this.gridEl()?.nativeElement;
       if (!grid) return;
-      const cell = grid.querySelector<HTMLElement>('[tabindex="0"]');
-      cell?.focus();
+      grid.querySelector<HTMLElement>('[tabindex="0"]')?.focus();
       this.focusRequested.set(false);
     });
   }
 
-  protected isSelected(day: CalendarDay): boolean {
-    return sameDay(day.date, this.selected());
-  }
-
-  protected isFocused(day: CalendarDay): boolean {
-    return sameDay(day.date, this.focusedDate());
-  }
-
-  protected isDisabled(day: CalendarDay): boolean {
-    const min = this.min();
-    const max = this.max();
-    if (min && day.date.getTime() < new Date(min.getFullYear(), min.getMonth(), min.getDate()).getTime()) return true;
-    if (max && day.date.getTime() > new Date(max.getFullYear(), max.getMonth(), max.getDate(), 23, 59, 59, 999).getTime()) return true;
-    return false;
-  }
-
-  protected select(day: CalendarDay): void {
-    if (this.isDisabled(day)) return;
+  protected select(day: EnrichedDay): void {
+    if (day.isDisabled) return;
     if (!day.inCurrentMonth) {
       this.visibleMonth.set(startOfMonth(day.date));
     }
     this.focusedDate.set(day.date);
     this.daySelect.emit(day.date);
+  }
+
+  private isDateDisabled(date: Date): boolean {
+    const t = date.getTime();
+    return t < this.minDayMs() || t > this.maxDayMs();
   }
 
   protected navigate(months: number): void {
@@ -452,7 +249,7 @@ export class NgxDatetimeCalendar {
 
   private handleDaysKeydown(event: KeyboardEvent): void {
     const current = this.focusedDate();
-    const handled = (next: Date) => {
+    const move = (next: Date) => {
       event.preventDefault();
       this.focusedDate.set(next);
       if (
@@ -466,44 +263,44 @@ export class NgxDatetimeCalendar {
 
     switch (event.key) {
       case 'ArrowLeft': {
-        const d = new Date(current); d.setDate(d.getDate() - 1); return handled(d);
+        const d = new Date(current); d.setDate(d.getDate() - 1); return move(d);
       }
       case 'ArrowRight': {
-        const d = new Date(current); d.setDate(d.getDate() + 1); return handled(d);
+        const d = new Date(current); d.setDate(d.getDate() + 1); return move(d);
       }
       case 'ArrowUp': {
-        const d = new Date(current); d.setDate(d.getDate() - 7); return handled(d);
+        const d = new Date(current); d.setDate(d.getDate() - 7); return move(d);
       }
       case 'ArrowDown': {
-        const d = new Date(current); d.setDate(d.getDate() + 7); return handled(d);
+        const d = new Date(current); d.setDate(d.getDate() + 7); return move(d);
       }
       case 'Home': {
         const offset = (current.getDay() - this.weekStartsOn() + 7) % 7;
         const d = new Date(current); d.setDate(d.getDate() - offset);
-        return handled(d);
+        return move(d);
       }
       case 'End': {
         const offset = (current.getDay() - this.weekStartsOn() + 7) % 7;
         const d = new Date(current); d.setDate(d.getDate() + (6 - offset));
-        return handled(d);
+        return move(d);
       }
       case 'PageUp': {
         const d = event.shiftKey ? addYears(current, -1) : addMonths(current, -1);
-        return handled(d);
+        return move(d);
       }
       case 'PageDown': {
         const d = event.shiftKey ? addYears(current, 1) : addMonths(current, 1);
-        return handled(d);
+        return move(d);
       }
       case 'Enter':
       case ' ': {
         event.preventDefault();
-        const day: CalendarDay = {
-          date: current,
-          inCurrentMonth: current.getMonth() === this.visibleMonth().getMonth(),
-          isToday: sameDay(current, new Date()),
-        };
-        this.select(day);
+        if (this.isDateDisabled(current)) return;
+        if (current.getMonth() !== this.visibleMonth().getMonth()) {
+          this.visibleMonth.set(startOfMonth(current));
+        }
+        this.focusedDate.set(current);
+        this.daySelect.emit(current);
         return;
       }
     }
@@ -548,9 +345,9 @@ export class NgxDatetimeCalendar {
     const move = (delta: number) => {
       event.preventDefault();
       this.focusedYear.set(current + delta);
-      // Make sure the visible decade is updated if we move outside the current grid
-      const start = this.years()[0].value;
-      const end = this.years()[this.years().length - 1].value;
+      const yearsList = this.years();
+      const start = yearsList[0].value;
+      const end = yearsList[yearsList.length - 1].value;
       if (current + delta < start || current + delta > end) {
         this.visibleMonth.set(addYears(this.visibleMonth(), delta));
       }
