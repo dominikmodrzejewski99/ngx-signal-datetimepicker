@@ -28,8 +28,36 @@ A small, themeable Angular **datetime picker** that combines date and time selec
   - 12h / 24h hour cycle, configurable minute / second step
   - Locale-aware labels via `Intl.DateTimeFormat`
 - Accessible: keyboard navigation, ARIA roles, focus-visible outlines
+- **Mobile-aware**: on small viewports the panel becomes a full-width bottom sheet with backdrop; touch devices automatically get larger 48 px targets, respects `safe-area-inset-bottom` on iOS
 
 > Angular 21+ required (Signal Forms ship under `@angular/forms/signals`).
+
+## Why not `<input type="datetime-local">`?
+
+The native control is great for throwaway prototypes. Once an app needs a
+consistent UX, localization, validation messages, or accessibility on
+mobile, the gaps add up fast. This library exists to close those gaps
+without pulling in Material, Bootstrap, moment, or day.js.
+
+| Concern                         | Native `<input type="datetime-local">`                                    | `ngx-signal-datetimepicker`                              |
+| ------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------- |
+| UI / theming                    | Browser-controlled, mostly unstylable                                     | Full template + CSS variables, Material-friendly         |
+| Cross-browser UX                | Wheel on iOS, calendar on Android, minimal on desktop Chrome / Firefox    | Identical experience everywhere                          |
+| Locale                          | Follows the OS, not the app                                               | Per-instance `locale` via `Intl.DateTimeFormat`          |
+| Time zone                       | "Wall clock" only, no IANA awareness                                      | Works with full `Date` objects in any time zone          |
+| Value type in the form          | `string` (`"2026-05-20T10:30"`)                                           | `Date \| null`, ready for Signal Forms                   |
+| Validation messages             | Native, untranslatable, unstyleable, positioned by the browser            | Routed through Signal Forms / Reactive Forms, fully yours |
+| Disabled dates / ranges         | Not supported                                                             | `minDate` / `maxDate`, programmatic `disabled`           |
+| Keyboard on mobile              | Inconsistent (no keyboard for date input on Chrome Android)               | Full keyboard support on every platform                  |
+| Focus management                | Browser-controlled                                                        | Roving tabindex, focus trap, returns focus on close      |
+| Step granularity UI             | `step="900"` works, but the wheel still scrolls every minute              | `minuteStep` / `secondStep` reflected in the UI          |
+| Inline / custom trigger         | Not possible                                                              | `triggerTpl` / `headerTpl` / `footerTpl` slots           |
+| WCAG 2.2 AAA conformance        | Depends on the browser, not guaranteed                                    | Built-in, AXE-clean, AAA contrast and target sizes       |
+| Runtime size                    | 0 bytes (it's the browser)                                                | A few kB gzipped, zero peer deps                         |
+
+If the only requirement is "give me a string in ISO format and I don't
+care what it looks like", stick with the native input. If any row above
+matters, that's what this library is for.
 
 ## Install
 
@@ -147,6 +175,7 @@ panel closes.
 | `placeholder`     | `string`                               | `'Select date and time'`      | Trigger placeholder when value is `null`.         |
 | `displayFormat`   | `Intl.DateTimeFormatOptions \| null`   | sensible default              | Override the trigger's display format.            |
 | `closeOnSelect`   | `boolean`                              | `false`                       | Close after a date click (only when `showTime` is `false`). |
+| `mobileBreakpoint`| `number`                               | `640`                         | Viewport width (px) below which the panel renders as a bottom sheet. Set `0` to disable. |
 | `clearLabel`      | `string`                               | `'Clear'`                     | Footer "clear" button label.                      |
 | `confirmLabel`    | `string`                               | `'OK'`                        | Footer "confirm" button label.                    |
 | `ariaLabel`       | `string`                               | `'Date and time picker'`      | Accessible label for the dialog.                  |

@@ -11,7 +11,7 @@ import {
   FormRoot,
   required,
 } from '@angular/forms/signals';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NgxDatetimePicker } from './datetime-picker.component';
 import { TimePreset } from './time.component';
 
@@ -575,6 +575,70 @@ describe('NgxDatetimePicker', () => {
       fix.detectChanges();
       expect(fix.componentInstance.fm.start().value()).not.toBeNull();
       expect(fix.componentInstance.fm.start().valid()).toBe(true);
+    });
+  });
+
+  describe('mobile bottom sheet', () => {
+    let originalMatchMedia: typeof window.matchMedia;
+
+    function mockMatchMedia(matches: boolean): void {
+      window.matchMedia = vi.fn().mockImplementation(() => ({
+        matches,
+        media: '',
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })) as unknown as typeof window.matchMedia;
+    }
+
+    beforeEach(() => {
+      originalMatchMedia = window.matchMedia;
+      TestBed.configureTestingModule({ imports: [HostBasic] });
+    });
+
+    afterEach(() => {
+      window.matchMedia = originalMatchMedia;
+    });
+
+    it('marks the host as mobile and renders a backdrop on narrow viewports', () => {
+      mockMatchMedia(true);
+      const fix = TestBed.createComponent(HostBasic);
+      fix.detectChanges();
+      trigger(fix).click();
+      fix.detectChanges();
+      const host = fix.nativeElement.querySelector('ngx-datetime-picker') as HTMLElement;
+      expect(host.classList.contains('is-mobile')).toBe(true);
+      expect(fix.nativeElement.querySelector('.ngx-dt-backdrop')).not.toBeNull();
+      expect(fix.nativeElement.querySelector('.ngx-dt-panel')?.getAttribute('aria-modal')).toBe(
+        'true',
+      );
+    });
+
+    it('does not render a backdrop on wide viewports', () => {
+      mockMatchMedia(false);
+      const fix = TestBed.createComponent(HostBasic);
+      fix.detectChanges();
+      trigger(fix).click();
+      fix.detectChanges();
+      const host = fix.nativeElement.querySelector('ngx-datetime-picker') as HTMLElement;
+      expect(host.classList.contains('is-mobile')).toBe(false);
+      expect(fix.nativeElement.querySelector('.ngx-dt-backdrop')).toBeNull();
+    });
+
+    it('closes the panel when the backdrop is clicked', () => {
+      mockMatchMedia(true);
+      const fix = TestBed.createComponent(HostBasic);
+      fix.detectChanges();
+      trigger(fix).click();
+      fix.detectChanges();
+      expect(isOpen(fix)).toBe(true);
+      const backdrop = fix.nativeElement.querySelector('.ngx-dt-backdrop') as HTMLElement;
+      backdrop.click();
+      fix.detectChanges();
+      expect(isOpen(fix)).toBe(false);
     });
   });
 });

@@ -16,6 +16,20 @@ This is an Angular workspace that contains:
 
 > **Why?** The Angular ecosystem doesn't have a small, framework-native datetime picker that exposes one combined `Date | null` value and plugs into the new Signal Forms API. This fixes that.
 
+### Why not `<input type="datetime-local">`?
+
+Native works for prototypes. In real apps you usually need things the browser doesn't give you:
+
+- **Consistent UX** across iOS (wheel), Android (calendar), and desktop browsers
+- **Per-app locale** instead of "whatever the user's OS is set to"
+- **`Date` in your model**, not an ISO string you have to parse at every boundary
+- **Styled / localized validation messages** routed through Signal Forms or Reactive Forms
+- **Disabled dates / ranges**, custom triggers, inline mode
+- **Full keyboard support on mobile** (Chrome Android still lacks it for `date` inputs)
+- **WCAG 2.2 AAA conformance** that doesn't depend on the browser
+
+See the full feature-by-feature comparison in the [library README](./projects/ngx-signal-datetimepicker/README.md#why-not-input-typedatetime-local).
+
 📦 **Package:** [`ngx-signal-datetimepicker`](./projects/ngx-signal-datetimepicker/README.md) — see the library README for full API docs.
 
 ## Repo layout

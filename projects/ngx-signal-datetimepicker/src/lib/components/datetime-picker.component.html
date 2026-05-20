@@ -1,0 +1,184 @@
+@if (triggerTpl(); as tpl) {
+  <ng-container
+    [ngTemplateOutlet]="tpl"
+    [ngTemplateOutletContext]="triggerContext()"
+  />
+} @else if (label()) {
+  <div
+    class="ngx-dt-field"
+    [class.is-floating]="labelFloating()"
+    [class.has-value]="!!value()"
+    [class.has-hint]="!!hint()"
+  >
+    <button
+      #triggerBtn
+      type="button"
+      class="ngx-dt-trigger ngx-dt-trigger--floating"
+      [attr.aria-haspopup]="'dialog'"
+      [attr.aria-expanded]="isOpen()"
+      [attr.aria-labelledby]="labelId"
+      [attr.aria-describedby]="hint() ? hintId : null"
+      [disabled]="effectiveDisabled()"
+      (click)="toggle()"
+    >
+      <span
+        class="ngx-dt-trigger__text"
+        [class.is-placeholder]="!value()"
+      >{{ value() ? displayText() : '' }}</span>
+      <span class="ngx-dt-trigger__icon" aria-hidden="true">📅</span>
+    </button>
+    <span
+      class="ngx-dt-field__label"
+      [id]="labelId"
+    >{{ label() }}</span>
+    @if (hint()) {
+      <small class="ngx-dt-field__hint" [id]="hintId">{{ hint() }}</small>
+    }
+  </div>
+} @else {
+  <button
+    #triggerBtn
+    type="button"
+    class="ngx-dt-trigger"
+    [attr.aria-haspopup]="'dialog'"
+    [attr.aria-expanded]="isOpen()"
+    [disabled]="effectiveDisabled()"
+    (click)="toggle()"
+  >
+    <span class="ngx-dt-trigger__text" [class.is-placeholder]="!value()">
+      {{ displayText() }}
+    </span>
+    <span class="ngx-dt-trigger__icon" aria-hidden="true">📅</span>
+  </button>
+}
+
+@if (isOpen() && isMobile()) {
+  <div class="ngx-dt-backdrop" aria-hidden="true" (click)="close(false)"></div>
+}
+
+@if (isOpen()) {
+  <div
+    class="ngx-dt-panel"
+    role="dialog"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-modal]="isMobile() ? 'true' : null"
+  >
+    @if (isMobile()) {
+      <span class="ngx-dt-handle" aria-hidden="true"></span>
+    }
+    @if (headerTpl(); as tpl) {
+      <ng-container
+        [ngTemplateOutlet]="tpl"
+        [ngTemplateOutletContext]="panelContext()"
+      />
+    }
+
+    @if (wizard() && showTime()) {
+      <nav class="ngx-dt-steps" aria-label="Picker steps">
+        <button
+          type="button"
+          class="ngx-dt-steps__step"
+          [class.is-active]="step() === 'date'"
+          [class.is-done]="step() === 'time'"
+          [attr.aria-current]="step() === 'date' ? 'step' : null"
+          (click)="goToDate()"
+        >
+          <span class="ngx-dt-steps__num">1</span>
+          <span>{{ dateStepLabel() }}</span>
+        </button>
+        <span class="ngx-dt-steps__sep" aria-hidden="true">›</span>
+        <button
+          type="button"
+          class="ngx-dt-steps__step"
+          [class.is-active]="step() === 'time'"
+          [attr.aria-current]="step() === 'time' ? 'step' : null"
+          [disabled]="!value()"
+          (click)="goToTime()"
+        >
+          <span class="ngx-dt-steps__num">2</span>
+          <span>{{ timeStepLabel() }}</span>
+        </button>
+      </nav>
+    }
+
+    @if (!wizard() || !showTime() || step() === 'date') {
+      <ngx-datetime-calendar
+        #calendar
+        [selected]="zonedSelected()"
+        [min]="zonedMin()"
+        [max]="zonedMax()"
+        [locale]="effectiveLocale()"
+        [weekStartsOn]="weekStartsOn()"
+        [ariaLabel]="'Date'"
+        (daySelect)="onDateSelect($event)"
+      />
+    }
+
+    @if (showTime() && (!wizard() || step() === 'time')) {
+      @if (!wizard()) {
+        <div class="ngx-dt-divider" role="separator"></div>
+        @if (!value()) {
+          <p class="ngx-dt-hint">{{ pickDateHint() }}</p>
+        }
+      }
+      <ngx-datetime-time
+        [value]="timeValue()"
+        [hourCycle]="hourCycle()"
+        [showSeconds]="showSeconds()"
+        [minuteStep]="minuteStep()"
+        [secondStep]="secondStep()"
+        [disabled]="effectiveDisabled()"
+        [readonly]="readonly()"
+        [presets]="effectivePresets()"
+        [wheel]="wheelStep()"
+        (valueChange)="onTimeChange($event)"
+      />
+    }
+
+    @if (footerTpl(); as tpl) {
+      <ng-container
+        [ngTemplateOutlet]="tpl"
+        [ngTemplateOutletContext]="panelContext()"
+      />
+    } @else {
+      <div class="ngx-dt-actions">
+        @if (wizard() && showTime() && step() === 'time') {
+          <button
+            type="button"
+            class="ngx-dt-btn ngx-dt-btn--ghost"
+            (click)="goToDate()"
+          >← {{ backLabel() }}</button>
+        } @else {
+          <button
+            type="button"
+            class="ngx-dt-btn ngx-dt-btn--ghost"
+            (click)="setNow()"
+            [disabled]="effectiveDisabled() || readonly()"
+          >{{ nowLabel() }}</button>
+        }
+        <span class="ngx-dt-actions__spacer"></span>
+        <button
+          type="button"
+          class="ngx-dt-btn ngx-dt-btn--ghost"
+          (click)="clear()"
+          [disabled]="effectiveDisabled() || readonly() || !value()"
+        >{{ clearLabel() }}</button>
+        @if (wizard() && showTime() && step() === 'date') {
+          <button
+            type="button"
+            class="ngx-dt-btn ngx-dt-btn--primary"
+            (click)="goToTime()"
+            [disabled]="effectiveDisabled() || readonly() || !value()"
+          >{{ nextLabel() }} →</button>
+        } @else {
+          <button
+            type="button"
+            class="ngx-dt-btn ngx-dt-btn--primary"
+            (click)="confirm()"
+            [disabled]="effectiveDisabled() || readonly()"
+          >{{ confirmLabel() }}</button>
+        }
+      </div>
+    }
+  </div>
+}

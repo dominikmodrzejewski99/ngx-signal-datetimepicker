@@ -90,6 +90,8 @@ function currentTime(timeZone?: string | null): TimeValue {
   selector: 'ngx-datetime-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgxDatetimeCalendar, NgxDatetimeTime, NgTemplateOutlet],
+  templateUrl: './datetime-picker.component.html',
+  styleUrl: './datetime-picker.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -101,331 +103,11 @@ function currentTime(timeZone?: string | null): TimeValue {
     'class': 'ngx-dt-host',
     '[class.is-open]': 'isOpen()',
     '[class.is-disabled]': 'effectiveDisabled()',
+    '[class.is-mobile]': 'isMobile()',
     '[attr.data-cycle]': 'hourCycle()',
     '(document:click)': 'onDocumentClick($event)',
     '(keydown.escape)': 'close()',
   },
-  template: `
-    @if (triggerTpl(); as tpl) {
-      <ng-container
-        [ngTemplateOutlet]="tpl"
-        [ngTemplateOutletContext]="triggerContext()"
-      />
-    } @else if (label()) {
-      <div
-        class="ngx-dt-field"
-        [class.is-floating]="labelFloating()"
-        [class.has-value]="!!value()"
-        [class.has-hint]="!!hint()"
-      >
-        <button
-          type="button"
-          class="ngx-dt-trigger ngx-dt-trigger--floating"
-          [attr.aria-haspopup]="'dialog'"
-          [attr.aria-expanded]="isOpen()"
-          [attr.aria-labelledby]="labelId"
-          [attr.aria-describedby]="hint() ? hintId : null"
-          [disabled]="effectiveDisabled()"
-          (click)="toggle()"
-        >
-          <span
-            class="ngx-dt-trigger__text"
-            [class.is-placeholder]="!value()"
-          >{{ value() ? displayText() : '' }}</span>
-          <span class="ngx-dt-trigger__icon" aria-hidden="true">📅</span>
-        </button>
-        <span
-          class="ngx-dt-field__label"
-          [id]="labelId"
-        >{{ label() }}</span>
-        @if (hint()) {
-          <small class="ngx-dt-field__hint" [id]="hintId">{{ hint() }}</small>
-        }
-      </div>
-    } @else {
-      <button
-        type="button"
-        class="ngx-dt-trigger"
-        [attr.aria-haspopup]="'dialog'"
-        [attr.aria-expanded]="isOpen()"
-        [disabled]="effectiveDisabled()"
-        (click)="toggle()"
-      >
-        <span class="ngx-dt-trigger__text" [class.is-placeholder]="!value()">
-          {{ displayText() }}
-        </span>
-        <span class="ngx-dt-trigger__icon" aria-hidden="true">📅</span>
-      </button>
-    }
-
-    @if (isOpen()) {
-      <div
-        #panel
-        class="ngx-dt-panel"
-        role="dialog"
-        [attr.aria-label]="ariaLabel()"
-      >
-        @if (headerTpl(); as tpl) {
-          <ng-container
-            [ngTemplateOutlet]="tpl"
-            [ngTemplateOutletContext]="panelContext()"
-          />
-        }
-
-        @if (wizard() && showTime()) {
-          <nav class="ngx-dt-steps" aria-label="Picker steps">
-            <button
-              type="button"
-              class="ngx-dt-steps__step"
-              [class.is-active]="step() === 'date'"
-              [class.is-done]="step() === 'time'"
-              [attr.aria-current]="step() === 'date' ? 'step' : null"
-              (click)="goToDate()"
-            >
-              <span class="ngx-dt-steps__num">1</span>
-              <span>{{ dateStepLabel() }}</span>
-            </button>
-            <span class="ngx-dt-steps__sep" aria-hidden="true">›</span>
-            <button
-              type="button"
-              class="ngx-dt-steps__step"
-              [class.is-active]="step() === 'time'"
-              [attr.aria-current]="step() === 'time' ? 'step' : null"
-              [disabled]="!value()"
-              (click)="goToTime()"
-            >
-              <span class="ngx-dt-steps__num">2</span>
-              <span>{{ timeStepLabel() }}</span>
-            </button>
-          </nav>
-        }
-
-        @if (!wizard() || !showTime() || step() === 'date') {
-          <ngx-datetime-calendar
-            #calendar
-            [selected]="zonedSelected()"
-            [min]="zonedMin()"
-            [max]="zonedMax()"
-            [locale]="effectiveLocale()"
-            [weekStartsOn]="weekStartsOn()"
-            [ariaLabel]="'Date'"
-            (daySelect)="onDateSelect($event)"
-          />
-        }
-
-        @if (showTime() && (!wizard() || step() === 'time')) {
-          @if (!wizard()) {
-            <div class="ngx-dt-divider" role="separator"></div>
-            @if (!value()) {
-              <p class="ngx-dt-hint">{{ pickDateHint() }}</p>
-            }
-          }
-          <ngx-datetime-time
-            [value]="timeValue()"
-            [hourCycle]="hourCycle()"
-            [showSeconds]="showSeconds()"
-            [minuteStep]="minuteStep()"
-            [secondStep]="secondStep()"
-            [disabled]="effectiveDisabled()"
-            [readonly]="readonly()"
-            [presets]="effectivePresets()"
-            [wheel]="wheelStep()"
-            (valueChange)="onTimeChange($event)"
-          />
-        }
-
-        @if (footerTpl(); as tpl) {
-          <ng-container
-            [ngTemplateOutlet]="tpl"
-            [ngTemplateOutletContext]="panelContext()"
-          />
-        } @else {
-          <div class="ngx-dt-actions">
-            @if (wizard() && showTime() && step() === 'time') {
-              <button
-                type="button"
-                class="ngx-dt-btn ngx-dt-btn--ghost"
-                (click)="goToDate()"
-              >← {{ backLabel() }}</button>
-            } @else {
-              <button
-                type="button"
-                class="ngx-dt-btn ngx-dt-btn--ghost"
-                (click)="setNow()"
-                [disabled]="effectiveDisabled() || readonly()"
-              >{{ nowLabel() }}</button>
-            }
-            <span class="ngx-dt-actions__spacer"></span>
-            <button
-              type="button"
-              class="ngx-dt-btn ngx-dt-btn--ghost"
-              (click)="clear()"
-              [disabled]="effectiveDisabled() || readonly() || !value()"
-            >{{ clearLabel() }}</button>
-            @if (wizard() && showTime() && step() === 'date') {
-              <button
-                type="button"
-                class="ngx-dt-btn ngx-dt-btn--primary"
-                (click)="goToTime()"
-                [disabled]="effectiveDisabled() || readonly() || !value()"
-              >{{ nextLabel() }} →</button>
-            } @else {
-              <button
-                type="button"
-                class="ngx-dt-btn ngx-dt-btn--primary"
-                (click)="confirm()"
-                [disabled]="effectiveDisabled() || readonly()"
-              >{{ confirmLabel() }}</button>
-            }
-          </div>
-        }
-      </div>
-    }
-  `,
-  styles: [`
-    :host {
-      position: relative;
-      display: inline-block;
-      font-family: var(--ngx-dt-font, inherit);
-      color: var(--ngx-dt-fg, #111827);
-    }
-    :host.is-disabled { opacity: 0.6; pointer-events: none; }
-
-    .ngx-dt-trigger {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.625rem 0.875rem;
-      min-height: var(--ngx-dt-target-size, 2.75rem);
-      max-width: 100%;
-      border: 1px solid var(--ngx-dt-border, #6b7280);
-      background: var(--ngx-dt-input-bg, #fff);
-      color: var(--ngx-dt-fg, #111827);
-      border-radius: var(--ngx-dt-radius, 0.5rem);
-      cursor: pointer;
-      font: inherit;
-      min-width: var(--ngx-dt-trigger-min-width, 16rem);
-      justify-content: space-between;
-    }
-    .ngx-dt-trigger:hover:not(:disabled) {
-      border-color: var(--ngx-dt-focus, #1d4ed8);
-    }
-    .ngx-dt-trigger:focus-visible {
-      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
-      outline-offset: 2px;
-    }
-    .ngx-dt-trigger__text {
-      flex: 1 1 auto;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      text-align: left;
-    }
-    .ngx-dt-trigger__text.is-placeholder { color: var(--ngx-dt-muted, #374151); }
-    .ngx-dt-trigger__icon { flex: 0 0 auto; }
-
-    .ngx-dt-panel {
-      position: absolute;
-      z-index: var(--ngx-dt-z, 1000);
-      top: calc(100% + 0.375rem);
-      left: 0;
-      background: var(--ngx-dt-panel-bg, #fff);
-      color: var(--ngx-dt-fg, #111827);
-      border: 1px solid var(--ngx-dt-border, #6b7280);
-      border-radius: var(--ngx-dt-radius-lg, 0.75rem);
-      padding: var(--ngx-dt-panel-padding, 0.875rem);
-      box-shadow: var(--ngx-dt-shadow, 0 12px 32px rgba(0,0,0,0.18));
-      display: flex; flex-direction: column; gap: 0.75rem;
-      min-width: calc(7 * var(--ngx-dt-target-size, 2.75rem) + 2rem);
-    }
-    .ngx-dt-divider { height: 1px; background: var(--ngx-dt-border, #6b7280); }
-
-    /* Wizard step indicator */
-    .ngx-dt-steps {
-      display: flex; align-items: center;
-      gap: 0.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--ngx-dt-border, #6b7280);
-    }
-    .ngx-dt-steps__step {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      flex: 1 1 auto;
-      padding: 0.5rem 0.625rem;
-      min-height: var(--ngx-dt-target-size, 2.75rem);
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--ngx-dt-muted, #374151);
-      border-radius: var(--ngx-dt-radius, 0.5rem);
-      cursor: pointer; font: inherit; font-weight: 500;
-      text-align: left;
-    }
-    .ngx-dt-steps__step:hover:not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
-    }
-    .ngx-dt-steps__step:focus-visible {
-      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
-      outline-offset: 2px;
-    }
-    .ngx-dt-steps__step:disabled { opacity: 0.45; cursor: not-allowed; }
-    .ngx-dt-steps__step.is-active {
-      color: var(--ngx-dt-fg, #111827);
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.04));
-    }
-    .ngx-dt-steps__step.is-active .ngx-dt-steps__num,
-    .ngx-dt-steps__step.is-done .ngx-dt-steps__num {
-      background: var(--ngx-dt-accent, #1d4ed8);
-      color: var(--ngx-dt-accent-fg, #fff);
-    }
-    .ngx-dt-steps__num {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 1.5rem; height: 1.5rem;
-      flex: 0 0 auto;
-      border-radius: 9999px;
-      background: var(--ngx-dt-border, #6b7280);
-      color: var(--ngx-dt-input-bg, #fff);
-      font-size: 0.8125rem; font-weight: 700;
-    }
-    .ngx-dt-steps__sep {
-      color: var(--ngx-dt-muted, #374151);
-      font-size: 1rem;
-      flex: 0 0 auto;
-    }
-    .ngx-dt-hint {
-      margin: 0;
-      font-size: 0.8125rem;
-      color: var(--ngx-dt-muted, #374151);
-      text-align: center;
-    }
-    .ngx-dt-actions {
-      display: flex; align-items: center; gap: 0.375rem;
-    }
-    .ngx-dt-actions__spacer { flex: 1; }
-    .ngx-dt-btn {
-      min-height: var(--ngx-dt-target-size, 2.75rem);
-      min-width: var(--ngx-dt-target-size, 2.75rem);
-      padding: 0.5rem 0.875rem;
-      border-radius: var(--ngx-dt-radius, 0.5rem);
-      border: 1px solid transparent;
-      cursor: pointer;
-      font: inherit; font-weight: 500;
-    }
-    .ngx-dt-btn:focus-visible {
-      outline: var(--ngx-dt-focus-width, 3px) solid var(--ngx-dt-focus, #1d4ed8);
-      outline-offset: 2px;
-    }
-    .ngx-dt-btn--ghost {
-      background: transparent;
-      color: var(--ngx-dt-fg, #111827);
-    }
-    .ngx-dt-btn--ghost:hover:not(:disabled) {
-      background: var(--ngx-dt-nav-bg-hover, rgba(0,0,0,0.06));
-    }
-    .ngx-dt-btn--primary {
-      background: var(--ngx-dt-accent, #1d4ed8);
-      color: var(--ngx-dt-accent-fg, #fff);
-    }
-    .ngx-dt-btn--primary:hover:not(:disabled) { filter: brightness(0.95); }
-    .ngx-dt-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-  `],
 })
 export class NgxDatetimePicker
   implements FormValueControl<Date | null>, ControlValueAccessor
@@ -454,35 +136,6 @@ export class NgxDatetimePicker
   readonly maxDate = input<Date | null>(null);
   readonly name = input<string>('');
   readonly touched = model<boolean>(false);
-
-  /** Disabled state driven by Reactive Forms via setDisabledState(). */
-  private readonly cvaDisabled = signal(false);
-  /** Last value pushed in by writeValue — used to avoid bouncing it back through onChange. */
-  private cvaWriting = false;
-
-  /** Combined disabled state used by the template / public API. */
-  protected readonly effectiveDisabled = computed(
-    () => this.disabled() || this.cvaDisabled(),
-  );
-
-  private cvaOnChange: (value: Date | null) => void = () => undefined;
-  private cvaOnTouched: () => void = () => undefined;
-
-  // -- ControlValueAccessor ---------------------------------------------------
-
-  writeValue(value: Date | null): void {
-    this.cvaWriting = true;
-    this.value.set(value);
-  }
-  registerOnChange(fn: (value: Date | null) => void): void {
-    this.cvaOnChange = fn;
-  }
-  registerOnTouched(fn: () => void): void {
-    this.cvaOnTouched = fn;
-  }
-  setDisabledState(isDisabled: boolean): void {
-    this.cvaDisabled.set(isDisabled);
-  }
 
   // Customization inputs
   /**
@@ -531,6 +184,13 @@ export class NgxDatetimePicker
    * Has no effect when `showTime` is `false`.
    */
   readonly wizard = input<boolean>(false);
+  /**
+   * Viewport width (in CSS pixels) below which the panel renders as a
+   * full-width bottom sheet with a backdrop instead of an absolutely-positioned
+   * dropdown. Default is `640`, matching the common "tablet portrait" breakpoint.
+   * Set to `0` to disable the mobile layout entirely.
+   */
+  readonly mobileBreakpoint = input<number>(640);
   /** Footer label for the "go back to the calendar" button in wizard mode. */
   readonly backLabel = input<string>('Back');
   /** Footer label for the "advance to the time step" button in wizard mode. */
@@ -549,10 +209,41 @@ export class NgxDatetimePicker
   /** Optional helper text rendered under a labeled trigger. */
   readonly hint = input<string | null>(null);
 
-  /** Unique IDs for label / hint, used by ARIA. */
+  // CVA wiring -------------------------------------------------------------
+
+  /** Disabled state driven by Reactive Forms via setDisabledState(). */
+  private readonly cvaDisabled = signal(false);
+  /** Last value pushed in by writeValue — used to avoid bouncing it back through onChange. */
+  private cvaWriting = false;
+
+  /** Combined disabled state used by the template / public API. */
+  protected readonly effectiveDisabled = computed(
+    () => this.disabled() || this.cvaDisabled(),
+  );
+
+  private cvaOnChange: (value: Date | null) => void = () => undefined;
+  private cvaOnTouched: () => void = () => undefined;
+
+  writeValue(value: Date | null): void {
+    this.cvaWriting = true;
+    this.value.set(value);
+  }
+  registerOnChange(fn: (value: Date | null) => void): void {
+    this.cvaOnChange = fn;
+  }
+  registerOnTouched(fn: () => void): void {
+    this.cvaOnTouched = fn;
+  }
+  setDisabledState(isDisabled: boolean): void {
+    this.cvaDisabled.set(isDisabled);
+  }
+
+  // Stable IDs for aria-labelledby / aria-describedby ----------------------
+
   private static seq = 0;
-  protected readonly labelId = `ngx-dt-label-${++NgxDatetimePicker.seq}`;
-  protected readonly hintId = `ngx-dt-hint-${NgxDatetimePicker.seq}`;
+  private readonly instanceId = `${++NgxDatetimePicker.seq}`;
+  protected readonly labelId = `ngx-dt-label-${this.instanceId}`;
+  protected readonly hintId = `ngx-dt-hint-${this.instanceId}`;
 
   /**
    * True when the floating label should be in its "raised" position — when
@@ -563,21 +254,30 @@ export class NgxDatetimePicker
     () => this.isOpen() || !!this.value(),
   );
 
-  // Template slots
+  // Template projection slots and view children ---------------------------
+
   readonly triggerTpl = contentChild<TemplateRef<NgxDatetimeTriggerContext>>('triggerTpl');
   readonly headerTpl = contentChild<TemplateRef<NgxDatetimePanelContext>>('headerTpl');
   readonly footerTpl = contentChild<TemplateRef<NgxDatetimePanelContext>>('footerTpl');
 
+  private readonly triggerBtn = viewChild<ElementRef<HTMLButtonElement>>('triggerBtn');
+  private readonly calendar = viewChild<NgxDatetimeCalendar>('calendar');
+
+  // Local state ------------------------------------------------------------
+
   protected readonly isOpen = signal(false);
   /** Current step in wizard mode. Ignored when `wizard()` is `false`. */
   protected readonly step = signal<'date' | 'time'>('date');
-  protected readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
-  private readonly calendar = viewChild<NgxDatetimeCalendar>('calendar');
+  /** True when the viewport is narrower than `mobileBreakpoint`. */
+  protected readonly isMobile = signal(false);
 
   /** Tracks whether the next render should move focus into the panel. */
   private readonly pendingPanelFocus = signal(false);
   /** Tracks whether the next render should move focus back to the trigger after close. */
   private readonly pendingTriggerFocus = signal(false);
+
+  /** Time used while value is null — lets the user fiddle with hours/minutes before picking a date. */
+  private readonly draftTime = signal<TimeValue>({ hours: 0, minutes: 0, seconds: 0 });
 
   constructor() {
     // Push internal value changes to the Reactive Forms control.
@@ -601,10 +301,24 @@ export class NgxDatetimePicker
         this.pendingTriggerFocus.set(false);
       }
     });
+
+    // Track viewport width to flip to bottom-sheet layout on mobile.
+    effect((onCleanup) => {
+      const bp = this.mobileBreakpoint();
+      if (bp <= 0 || typeof window === 'undefined' || !window.matchMedia) {
+        this.isMobile.set(false);
+        return;
+      }
+      const mql = window.matchMedia(`(max-width: ${bp - 1}px)`);
+      const update = (e: MediaQueryList | MediaQueryListEvent) =>
+        this.isMobile.set(e.matches);
+      update(mql);
+      mql.addEventListener('change', update);
+      onCleanup(() => mql.removeEventListener('change', update));
+    });
   }
 
-  /** Time used while value is null — lets the user fiddle with hours/minutes before picking a date. */
-  private readonly draftTime = signal<TimeValue>({ hours: 0, minutes: 0, seconds: 0 });
+  // Derived state ----------------------------------------------------------
 
   /** The selected value, projected into the configured time zone (or local). */
   protected readonly zonedSelected = computed<Date | null>(() => {
@@ -667,6 +381,8 @@ export class NgxDatetimePicker
     close: () => this.close(),
   }));
 
+  // Public API -------------------------------------------------------------
+
   open(): void {
     if (this.effectiveDisabled()) return;
     if (!this.value() && this.suggestCurrentTime()) {
@@ -679,18 +395,21 @@ export class NgxDatetimePicker
   }
 
   close(returnFocus = true): void {
-    if (this.isOpen()) {
-      this.isOpen.set(false);
-      this.touched.set(true);
-      this.cvaOnTouched();
-      if (returnFocus) {
-        this.pendingTriggerFocus.set(true);
-      }
+    if (!this.isOpen()) return;
+    this.isOpen.set(false);
+    this.touched.set(true);
+    this.cvaOnTouched();
+    if (returnFocus) {
+      this.pendingTriggerFocus.set(true);
     }
   }
 
   toggle(): void {
-    this.isOpen() ? this.close() : this.open();
+    if (this.isOpen()) {
+      this.close();
+    } else {
+      this.open();
+    }
   }
 
   clear(): void {
@@ -718,6 +437,23 @@ export class NgxDatetimePicker
       seconds: projected.getSeconds(),
     });
   }
+
+  /** Wizard navigation — go back to the calendar step. */
+  goToDate(): void {
+    this.step.set('date');
+  }
+
+  /** Wizard navigation — move to the time step (no-op until a date is set). */
+  goToTime(): void {
+    if (!this.value()) return;
+    this.step.set('time');
+  }
+
+  focus(): void {
+    this.triggerBtn()?.nativeElement.focus();
+  }
+
+  // Event handlers ---------------------------------------------------------
 
   protected onDateSelect(date: Date): void {
     if (this.effectiveDisabled() || this.readonly()) return;
@@ -748,17 +484,6 @@ export class NgxDatetimePicker
     }
   }
 
-  /** Wizard navigation — go back to the calendar step. */
-  goToDate(): void {
-    this.step.set('date');
-  }
-
-  /** Wizard navigation — move to the time step (no-op until a date is set). */
-  goToTime(): void {
-    if (!this.value()) return;
-    this.step.set('time');
-  }
-
   protected onTimeChange(time: TimeValue): void {
     if (this.effectiveDisabled() || this.readonly()) return;
     this.draftTime.set(time);
@@ -779,12 +504,5 @@ export class NgxDatetimePicker
       // Don't yank focus back to the trigger when the user clicked elsewhere intentionally.
       this.close(false);
     }
-  }
-
-  focus(): void {
-    const trigger = this.hostRef.nativeElement.querySelector<HTMLElement>(
-      'button.ngx-dt-trigger',
-    );
-    trigger?.focus();
   }
 }
